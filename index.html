@@ -96,15 +96,34 @@
       </table>
     </div>
 
-    <p class="hint">Actualizar preço/stock de um produto teu</p>
+    <p class="hint">Os teus produtos cadastrados</p>
+    <div style="overflow-x:auto; margin-bottom:20px;">
+      <table>
+        <thead><tr><th>Produto</th><th>Preço</th><th>Promo</th><th>Qtd.</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="meus-produtos-tbody"></tbody>
+      </table>
+    </div>
+
+    <p class="hint">Cadastrar produto novo (fora da lista, se o teu não estiver lá)</p>
+    <div class="panel row">
+      <div class="field"><label>Nome do produto novo</label><input id="novo-produto-nome" placeholder="ex: Filtro de óleo universal" /></div>
+      <button class="btn secondary" id="novo-produto-btn" style="align-self:flex-end;">Adicionar à lista</button>
+    </div>
+
+    <p class="hint">Actualizar preço/stock/quantidade de um produto teu</p>
     <div class="panel row">
       <div class="field"><label>Produto</label><select id="prod-select"></select></div>
       <div class="field"><label>Preço normal (Kz)</label><input id="prod-preco" type="number" /></div>
       <div class="field"><label>Preço promocional (opcional)</label><input id="prod-promo" type="number" placeholder="deixa em branco para remover" /></div>
-      <div class="field"><label>Stock</label><select id="prod-stock"><option value="1">Disponível</option><option value="0">Sem stock</option></select></div>
+      <div class="field"><label>Stock (disponível/indisponível)</label><select id="prod-stock"><option value="1">Disponível</option><option value="0">Sem stock</option></select></div>
+      <div class="field"><label>Quantidade em stock (opcional)</label><input id="prod-quantidade" type="number" min="0" placeholder="deixa em branco se não quiseres controlar" /></div>
       <div class="field"><label>URL da imagem (opcional)</label><input id="prod-imagem" placeholder="https://..." /></div>
     </div>
-    <div class="hint" style="margin:6px 0 0;">Sem imagem, o cliente vê um ícone genérico. Preço promocional tem de ser menor que o normal — apaga o campo para remover a promoção.</div>
+    <label style="display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#C9C6BE; text-transform:none; margin-top:8px;">
+      <input type="checkbox" id="prod-auto-desativar" checked style="width:auto; flex:none;" />
+      Desactivar automaticamente quando a quantidade chegar a zero (repõe quando quiseres, actualizando a quantidade outra vez)
+    </label>
+    <div class="hint" style="margin:6px 0 0;">Sem imagem, o cliente vê um ícone genérico. Preço promocional tem de ser menor que o normal — apaga o campo para remover a promoção. Quantidade é opcional — sem ela, o stock funciona só pelo botão Disponível/Sem stock.</div>
     <button class="btn secondary" id="actualizar-produto-btn" style="margin-top:10px;">Actualizar</button>
   </section>
 </main>
@@ -200,7 +219,50 @@ async function carregarMeusProdutos(){
   MEUS_PRODUTOS = {};
   lista.forEach(p=>{ MEUS_PRODUTOS[p.produto_id] = p; });
   preencherFormularioProduto();
+  renderMeusProdutos(lista);
 }
+
+function renderMeusProdutos(lista){
+  const tbody = document.getElementById('meus-produtos-tbody');
+  if(lista.length===0){
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Ainda sem produtos cadastrados.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(p=>{
+    const estado = p.stock ? 'Disponível' : 'Indisponível';
+    const qtd = p.quantidade!=null ? p.quantidade : '—';
+    const promo = p.preco_promocional ? `${Number(p.preco_promocional).toLocaleString('pt-PT')} Kz` : '—';
+    return `<tr>
+      <td>${p.nome}</td>
+      <td>${Number(p.preco).toLocaleString('pt-PT')} Kz</td>
+      <td>${promo}</td>
+      <td>${qtd}</td>
+      <td>${estado}</td>
+      <td><button class="mini-btn" onclick="editarProduto('${p.produto_id}')">Editar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function editarProduto(produtoId){
+  document.getElementById('prod-select').value = produtoId;
+  preencherFormularioProduto();
+  document.getElementById('prod-select').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+document.getElementById('novo-produto-btn').addEventListener('click', async ()=>{
+  const nome = document.getElementById('novo-produto-nome').value.trim();
+  if(!nome){ banner('Escreve o nome do produto novo.', false); return; }
+  try{
+    const produto = await chamar('/api/produtos', {method:'POST', body: JSON.stringify({nome})});
+    banner(`Produto "${produto.nome}" adicionado — escolhe-o na lista abaixo para definir preço.`, true);
+    document.getElementById('novo-produto-nome').value = '';
+    await carregarCatalogo();
+    document.getElementById('prod-select').value = produto.id;
+    preencherFormularioProduto();
+  }catch(e){
+    banner(`Falha ao adicionar produto: ${e.message}`, false);
+  }
+});
 
 function preencherFormularioProduto(){
   const produtoId = document.getElementById('prod-select').value;
@@ -209,6 +271,8 @@ function preencherFormularioProduto(){
   document.getElementById('prod-promo').value = existente && existente.preco_promocional ? existente.preco_promocional : '';
   document.getElementById('prod-stock').value = existente ? String(existente.stock) : '1';
   document.getElementById('prod-imagem').value = existente && existente.imagem_url ? existente.imagem_url : '';
+  document.getElementById('prod-quantidade').value = existente && existente.quantidade!=null ? existente.quantidade : '';
+  document.getElementById('prod-auto-desativar').checked = existente ? !!existente.auto_desativar : true;
 }
 document.getElementById('prod-select').addEventListener('change', preencherFormularioProduto);
 
@@ -234,14 +298,18 @@ document.getElementById('actualizar-produto-btn').addEventListener('click', asyn
   const promo = document.getElementById('prod-promo').value.trim();
   const stock = document.getElementById('prod-stock').value;
   const imagemUrl = document.getElementById('prod-imagem').value.trim();
+  const quantidade = document.getElementById('prod-quantidade').value.trim();
+  const autoDesativar = document.getElementById('prod-auto-desativar').checked;
   if(!produtoId){ banner('Escolhe um produto — o catálogo pode não ter carregado ainda.', false); return; }
   try{
-    await chamar(`/api/tenants/${tenantActual.id}/produtos`, {method:'PATCH', body: JSON.stringify({
+    const resultado = await chamar(`/api/tenants/${tenantActual.id}/produtos`, {method:'PATCH', body: JSON.stringify({
       produtoId, preco:Number(preco), stock: stock==='1',
       imagemUrl: imagemUrl || null,
-      precoPromocional: promo === '' ? null : Number(promo)
+      precoPromocional: promo === '' ? null : Number(promo),
+      quantidade: quantidade === '' ? null : Number(quantidade),
+      autoDesativar
     })});
-    banner('Produto actualizado.', true);
+    banner(resultado.autoDesativado ? 'Produto actualizado — desactivado automaticamente (quantidade em zero).' : 'Produto actualizado.', true);
     await carregarMeusProdutos();
   }catch(e){
     banner(`Falha ao actualizar: ${e.message}`, false);
