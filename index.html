@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monarca — Portal do Fornecedor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --asphalt:#16181A; --asphalt-2:#1F2224; --asphalt-3:#292D30; --line:#3A3F43;
+    --paper:#F3F1EC; --road-yellow:#F2C14E; --signal-green:#4C9A6A; --signal-red:#D64545;
+    --steel:#8A8F94; --white:#F5F4F0;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--asphalt); color:var(--white); font-family:'IBM Plex Sans',sans-serif;}
+  header{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:16px 20px; border-bottom:2px dashed var(--line); background:var(--asphalt-2);}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-mark{width:34px;height:34px;border-radius:4px; background:var(--road-yellow); display:flex;align-items:center;justify-content:center; font-family:'Oswald',sans-serif; font-weight:700; color:var(--asphalt); font-size:16px; transform:rotate(-3deg);}
+  h1{font-family:'Oswald',sans-serif; font-weight:600; font-size:20px; letter-spacing:.04em; margin:0; text-transform:uppercase;}
+  header span{display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--steel); letter-spacing:.1em; text-transform:uppercase;}
+  #sair-btn{display:none; font-family:'IBM Plex Mono',monospace; font-size:11px; background:transparent; border:1px solid var(--line); color:var(--steel); padding:6px 10px; border-radius:6px; cursor:pointer;}
+  main{padding:20px; max-width:800px; margin:0 auto;}
+  .hint{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--steel); margin:0 0 14px; text-transform:uppercase; letter-spacing:.07em;}
+  .panel{background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px;}
+  .row{display:flex; flex-wrap:wrap; gap:10px;}
+  select, input{background:var(--asphalt-3); color:var(--white); border:1px solid var(--line); padding:11px 12px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:13px; flex:1; min-width:150px;}
+  label{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--steel); text-transform:uppercase; letter-spacing:.05em; display:block; margin-bottom:4px;}
+  .field{flex:1; min-width:150px;}
+  .btn{font-family:'Oswald',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:.04em; background:var(--road-yellow); color:var(--asphalt); border:none; padding:12px 18px; border-radius:6px; cursor:pointer; font-weight:600;}
+  .btn.secondary{background:var(--asphalt-3); color:var(--white); border:1px solid var(--line);}
+  .btn:hover{filter:brightness(1.08);}
+  .status-banner{display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; margin-bottom:16px;}
+  .status-ok{background:rgba(76,154,106,.15); color:#6fd196; border:1px solid rgba(76,154,106,.35);}
+  .status-erro{background:rgba(214,69,69,.15); color:#ff8080; border:1px solid rgba(214,69,69,.35);}
+  .stats-row{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;}
+  .stat{background:var(--asphalt-2); border:1px solid var(--line); border-radius:8px; padding:14px 16px; flex:1; min-width:130px;}
+  .stat .n{font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; color:var(--road-yellow);}
+  .stat .l{font-size:10.5px; color:var(--steel); text-transform:uppercase; letter-spacing:.05em; margin-top:2px;}
+  table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono',monospace; font-size:12px;}
+  thead th{text-align:left; padding:9px 7px; color:var(--steel); text-transform:uppercase; font-size:10px; border-bottom:2px dashed var(--line);}
+  tbody td{padding:9px 7px; border-bottom:1px solid var(--asphalt-3);}
+  .empty{color:var(--steel); font-family:'IBM Plex Mono',monospace; font-size:12.5px;}
+  .view{display:none;} .view.active{display:block;}
+  .gps-status{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--steel); margin-top:6px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="brand-mark">M</div>
+    <div><h1>Monarca</h1><span>Portal do fornecedor</span></div>
+  </div>
+  <button id="sair-btn">Sair</button>
+</header>
+<main>
+  <div id="status-banner"></div>
+
+  <!-- LOGIN / IDENTIFICAÇÃO -->
+  <section id="view-login" class="view active">
+    <p class="hint">Identifica-te pelo número de WhatsApp registado, ou cadastra a tua loja pela primeira vez</p>
+    <div class="panel">
+      <div class="row">
+        <div class="field"><label>O teu WhatsApp (com whatsapp: e +244)</label><input id="login-whatsapp" placeholder="whatsapp:+244923000000" /></div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn" id="entrar-btn">Entrar</button>
+        <button class="btn secondary" id="mostrar-cadastro-btn">Ainda não estou cadastrado</button>
+      </div>
+    </div>
+
+    <div class="panel" id="cadastro-panel" style="display:none;">
+      <p class="hint" style="margin-bottom:10px;">Cadastro da loja — a localização é obtida automaticamente pelo GPS do teu telemóvel</p>
+      <div class="row">
+        <div class="field"><label>Nome da loja</label><input id="cad-nome" /></div>
+        <div class="field"><label>Zona</label><input id="cad-zona" placeholder="ex: Camama" /></div>
+        <div class="field"><label>O teu WhatsApp</label><input id="cad-whatsapp" placeholder="whatsapp:+244923000000" /></div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn secondary" id="obter-gps-btn">📍 Usar a minha localização actual</button>
+      </div>
+      <div class="gps-status" id="gps-status">Localização ainda não obtida.</div>
+      <button class="btn" id="cadastrar-btn" style="margin-top:14px;">Cadastrar loja</button>
+    </div>
+  </section>
+
+  <!-- PAINEL DO FORNECEDOR (após login) -->
+  <section id="view-portal" class="view">
+    <div class="stats-row" id="stats-row"></div>
+
+    <p class="hint">Os teus clientes recentes (gerados pela plataforma)</p>
+    <div style="overflow-x:auto; margin-bottom:20px;">
+      <table>
+        <thead><tr><th>Código</th><th>Produto</th><th>Estado</th><th>Data</th></tr></thead>
+        <tbody id="leads-tbody"></tbody>
+      </table>
+    </div>
+
+    <p class="hint">Actualizar preço/stock de um produto teu</p>
+    <div class="panel row">
+      <div class="field"><label>Produto</label><select id="prod-select"></select></div>
+      <div class="field"><label>Preço (Kz)</label><input id="prod-preco" type="number" /></div>
+      <div class="field"><label>Stock</label><select id="prod-stock"><option value="1">Disponível</option><option value="0">Sem stock</option></select></div>
+      <div class="field"><label>URL da imagem (opcional)</label><input id="prod-imagem" placeholder="https://..." /></div>
+    </div>
+    <div class="hint" style="margin:6px 0 0;">Sem imagem, o cliente vê um ícone genérico do tipo de produto. Cola aqui um link de foto real da loja/produto se quiseres.</div>
+    <button class="btn secondary" id="actualizar-produto-btn" style="margin-top:10px;">Actualizar</button>
+  </section>
+</main>
+
+<script>
+// --- Configuração fixa: edita esta linha uma vez, não é pedido ao fornecedor ---
+const API_BASE_URL = "https://SEU-SERVICO.onrender.com";
+
+let tenantActual = null;
+let PRODUTOS = [];
+let gpsLat = null, gpsLng = null;
+
+function banner(msg, ok){
+  document.getElementById('status-banner').innerHTML =
+    `<div class="status-banner ${ok?'status-ok':'status-erro'}">${msg}</div>`;
+}
+async function chamar(path, opts={}){
+  const resp = await fetch(API_BASE_URL.replace(/\/$/,'') + path, {headers:{'Content-Type':'application/json'}, ...opts});
+  if(!resp.ok){ let c; try{c=await resp.json();}catch(e){c={erro:resp.statusText};} throw new Error(c.erro || `HTTP ${resp.status}`); }
+  return resp.status===204 ? null : resp.json();
+}
+
+document.getElementById('mostrar-cadastro-btn').addEventListener('click', ()=>{
+  document.getElementById('cadastro-panel').style.display='block';
+});
+
+document.getElementById('obter-gps-btn').addEventListener('click', ()=>{
+  if(!navigator.geolocation){ banner('Este telemóvel/browser não suporta GPS.', false); return; }
+  document.getElementById('gps-status').textContent = 'A obter localização...';
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{
+      gpsLat = pos.coords.latitude;
+      gpsLng = pos.coords.longitude;
+      document.getElementById('gps-status').textContent = `Localização obtida: ${gpsLat.toFixed(5)}, ${gpsLng.toFixed(5)}`;
+    },
+    (err)=>{ document.getElementById('gps-status').textContent = `Falha ao obter GPS: ${err.message}`; }
+  );
+});
+
+document.getElementById('cadastrar-btn').addEventListener('click', async ()=>{
+  const nome = document.getElementById('cad-nome').value.trim();
+  const zona = document.getElementById('cad-zona').value.trim();
+  const whatsappNumero = document.getElementById('cad-whatsapp').value.trim();
+  if(!nome || !zona || !whatsappNumero){ banner('Preenche nome, zona e WhatsApp.', false); return; }
+  if(gpsLat===null){ banner('Obtém a localização por GPS antes de cadastrar.', false); return; }
+  try{
+    const tenant = await chamar('/api/tenants', {method:'POST', body: JSON.stringify({nome, zona, lat:gpsLat, lng:gpsLng, whatsappNumero})});
+    banner('Loja cadastrada com sucesso.', true);
+    await entrarComoTenant(tenant.id);
+  }catch(e){
+    banner(`Falha ao cadastrar: ${e.message}`, false);
+  }
+});
+
+document.getElementById('entrar-btn').addEventListener('click', async ()=>{
+  const whatsapp = document.getElementById('login-whatsapp').value.trim();
+  if(!whatsapp){ banner('Escreve o teu número de WhatsApp.', false); return; }
+  try{
+    const tenant = await chamar('/api/tenants/lookup?whatsapp='+encodeURIComponent(whatsapp));
+    await entrarComoTenant(tenant.id, tenant);
+  }catch(e){
+    banner(`Não encontrámos a tua loja: ${e.message}. Cadastra-te abaixo.`, false);
+  }
+});
+
+async function entrarComoTenant(tenantId, tenantJaCarregado){
+  tenantActual = tenantJaCarregado || await chamar('/api/tenants/'+tenantId);
+  localStorage.setItem('mornaca_fornecedor_id', tenantActual.id);
+  document.getElementById('view-login').classList.remove('active');
+  document.getElementById('view-portal').classList.add('active');
+  document.getElementById('sair-btn').style.display='inline-block';
+  await carregarCatalogo();
+  await carregarPortal();
+}
+
+document.getElementById('sair-btn').addEventListener('click', ()=>{
+  localStorage.removeItem('mornaca_fornecedor_id');
+  tenantActual = null;
+  document.getElementById('view-portal').classList.remove('active');
+  document.getElementById('view-login').classList.add('active');
+  document.getElementById('sair-btn').style.display='none';
+});
+
+async function carregarCatalogo(){
+  PRODUTOS = await chamar('/api/produtos');
+  document.getElementById('prod-select').innerHTML = PRODUTOS.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+}
+
+async function carregarPortal(){
+  const t = await chamar('/api/tenants/'+tenantActual.id);
+  tenantActual = t;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat"><div class="n">${t.estado}</div><div class="l">Estado no ranking</div></div>
+    <div class="stat"><div class="n">${Number(t.saldo_aberto).toLocaleString('pt-PT')} Kz</div><div class="l">Saldo em aberto</div></div>
+    <div class="stat"><div class="n">${Math.round(t.taxa_confirmacao)}%</div><div class="l">Taxa de confirmação</div></div>
+    <div class="stat"><div class="n">${Math.round(t.pontualidade)}%</div><div class="l">Pontualidade</div></div>
+  `;
+  const leads = await chamar('/api/leads?tenantId='+t.id);
+  const tbody = document.getElementById('leads-tbody');
+  tbody.innerHTML = leads.length===0
+    ? '<tr><td colspan="4" class="empty">Ainda sem clientes gerados.</td></tr>'
+    : leads.map(l=>`<tr><td>${l.codigo}</td><td>${l.produto_id}</td><td>${l.status}</td><td>${new Date(l.criado_em).toLocaleDateString('pt-PT')}</td></tr>`).join('');
+}
+
+document.getElementById('actualizar-produto-btn').addEventListener('click', async ()=>{
+  const produtoId = document.getElementById('prod-select').value;
+  const preco = document.getElementById('prod-preco').value;
+  const stock = document.getElementById('prod-stock').value;
+  const imagemUrl = document.getElementById('prod-imagem').value.trim();
+  try{
+    await chamar(`/api/tenants/${tenantActual.id}/produtos`, {method:'PATCH', body: JSON.stringify({produtoId, preco:Number(preco), stock: stock==='1', imagemUrl: imagemUrl || null})});
+    banner('Produto actualizado.', true);
+  }catch(e){
+    banner(`Falha ao actualizar: ${e.message}`, false);
+  }
+});
+
+(async function init(){
+  const guardado = localStorage.getItem('mornaca_fornecedor_id');
+  if(guardado){
+    try{ await entrarComoTenant(guardado); }
+    catch(e){ localStorage.removeItem('mornaca_fornecedor_id'); }
+  }
+})();
+</script>
+</body>
+</html>
