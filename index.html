@@ -99,11 +99,12 @@
     <p class="hint">Actualizar preço/stock de um produto teu</p>
     <div class="panel row">
       <div class="field"><label>Produto</label><select id="prod-select"></select></div>
-      <div class="field"><label>Preço (Kz)</label><input id="prod-preco" type="number" /></div>
+      <div class="field"><label>Preço normal (Kz)</label><input id="prod-preco" type="number" /></div>
+      <div class="field"><label>Preço promocional (opcional)</label><input id="prod-promo" type="number" placeholder="deixa em branco para remover" /></div>
       <div class="field"><label>Stock</label><select id="prod-stock"><option value="1">Disponível</option><option value="0">Sem stock</option></select></div>
       <div class="field"><label>URL da imagem (opcional)</label><input id="prod-imagem" placeholder="https://..." /></div>
     </div>
-    <div class="hint" style="margin:6px 0 0;">Sem imagem, o cliente vê um ícone genérico do tipo de produto. Cola aqui um link de foto real da loja/produto se quiseres.</div>
+    <div class="hint" style="margin:6px 0 0;">Sem imagem, o cliente vê um ícone genérico. Preço promocional tem de ser menor que o normal — apaga o campo para remover a promoção.</div>
     <button class="btn secondary" id="actualizar-produto-btn" style="margin-top:10px;">Actualizar</button>
   </section>
 </main>
@@ -114,6 +115,7 @@ const API_BASE_URL = "https://monarca-orw0.onrender.com";
 
 let tenantActual = null;
 let PRODUTOS = [];
+let MEUS_PRODUTOS = {};
 let gpsLat = null, gpsLng = null;
 
 function banner(msg, ok){
@@ -176,6 +178,7 @@ async function entrarComoTenant(tenantId, tenantJaCarregado){
   document.getElementById('view-portal').classList.add('active');
   document.getElementById('sair-btn').style.display='inline-block';
   await carregarCatalogo();
+  await carregarMeusProdutos();
   await carregarPortal();
 }
 
@@ -191,6 +194,23 @@ async function carregarCatalogo(){
   PRODUTOS = await chamar('/api/produtos');
   document.getElementById('prod-select').innerHTML = PRODUTOS.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
 }
+
+async function carregarMeusProdutos(){
+  const lista = await chamar(`/api/tenants/${tenantActual.id}/produtos`);
+  MEUS_PRODUTOS = {};
+  lista.forEach(p=>{ MEUS_PRODUTOS[p.produto_id] = p; });
+  preencherFormularioProduto();
+}
+
+function preencherFormularioProduto(){
+  const produtoId = document.getElementById('prod-select').value;
+  const existente = MEUS_PRODUTOS[produtoId];
+  document.getElementById('prod-preco').value = existente ? existente.preco : '';
+  document.getElementById('prod-promo').value = existente && existente.preco_promocional ? existente.preco_promocional : '';
+  document.getElementById('prod-stock').value = existente ? String(existente.stock) : '1';
+  document.getElementById('prod-imagem').value = existente && existente.imagem_url ? existente.imagem_url : '';
+}
+document.getElementById('prod-select').addEventListener('change', preencherFormularioProduto);
 
 async function carregarPortal(){
   const t = await chamar('/api/tenants/'+tenantActual.id);
@@ -211,11 +231,18 @@ async function carregarPortal(){
 document.getElementById('actualizar-produto-btn').addEventListener('click', async ()=>{
   const produtoId = document.getElementById('prod-select').value;
   const preco = document.getElementById('prod-preco').value;
+  const promo = document.getElementById('prod-promo').value.trim();
   const stock = document.getElementById('prod-stock').value;
   const imagemUrl = document.getElementById('prod-imagem').value.trim();
+  if(!produtoId){ banner('Escolhe um produto — o catálogo pode não ter carregado ainda.', false); return; }
   try{
-    await chamar(`/api/tenants/${tenantActual.id}/produtos`, {method:'PATCH', body: JSON.stringify({produtoId, preco:Number(preco), stock: stock==='1', imagemUrl: imagemUrl || null})});
+    await chamar(`/api/tenants/${tenantActual.id}/produtos`, {method:'PATCH', body: JSON.stringify({
+      produtoId, preco:Number(preco), stock: stock==='1',
+      imagemUrl: imagemUrl || null,
+      precoPromocional: promo === '' ? null : Number(promo)
+    })});
     banner('Produto actualizado.', true);
+    await carregarMeusProdutos();
   }catch(e){
     banner(`Falha ao actualizar: ${e.message}`, false);
   }
