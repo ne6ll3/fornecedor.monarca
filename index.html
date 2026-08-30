@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monarca — Portal do Fornecedor</title>
+<title>Mornaca — Portal do Fornecedor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -49,7 +49,7 @@
 <header>
   <div class="brand">
     <div class="brand-mark">M</div>
-    <div><h1>Monarca</h1><span>Portal do fornecedor</span></div>
+    <div><h1>Mornaca</h1><span>Portal do fornecedor</span></div>
   </div>
   <button id="sair-btn">Sair</button>
 </header>
@@ -75,6 +75,13 @@
         <div class="field"><label>Nome da loja</label><input id="cad-nome" /></div>
         <div class="field"><label>Zona</label><input id="cad-zona" placeholder="ex: Camama" /></div>
         <div class="field"><label>O teu WhatsApp</label><input id="cad-whatsapp" placeholder="whatsapp:+244923000000" /></div>
+        <div class="field"><label>NIF da loja</label><input id="cad-nif" placeholder="obrigatório — usado para validação manual" /></div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <div class="field" style="min-width:100%;">
+          <label>Fotos/vídeos de referência do local (um link por linha — opcional, mas acelera a validação e serve de perfil)</label>
+          <textarea id="cad-midias" rows="3" style="width:100%; background:var(--asphalt-3); color:var(--white); border:1px solid var(--line); border-radius:6px; padding:10px; font-family:'IBM Plex Mono',monospace; font-size:12px;" placeholder="https://...&#10;https://..."></textarea>
+        </div>
       </div>
       <div class="row" style="margin-top:10px;">
         <button class="btn secondary" id="obter-gps-btn">📍 Usar a minha localização actual</button>
@@ -91,7 +98,7 @@
     <p class="hint">Os teus clientes recentes (gerados pela plataforma)</p>
     <div style="overflow-x:auto; margin-bottom:20px;">
       <table>
-        <thead><tr><th>Código</th><th>Produto</th><th>Estado</th><th>Data</th></tr></thead>
+        <thead><tr><th>Código</th><th>Produto</th><th>Estado</th><th>Data</th><th></th></tr></thead>
         <tbody id="leads-tbody"></tbody>
       </table>
     </div>
@@ -168,11 +175,23 @@ document.getElementById('cadastrar-btn').addEventListener('click', async ()=>{
   const nome = document.getElementById('cad-nome').value.trim();
   const zona = document.getElementById('cad-zona').value.trim();
   const whatsappNumero = document.getElementById('cad-whatsapp').value.trim();
-  if(!nome || !zona || !whatsappNumero){ banner('Preenche nome, zona e WhatsApp.', false); return; }
+  const nif = document.getElementById('cad-nif').value.trim();
+  const midiasTexto = document.getElementById('cad-midias').value.trim();
+  if(!nome || !zona || !whatsappNumero || !nif){ banner('Preenche nome, zona, WhatsApp e NIF.', false); return; }
   if(gpsLat===null){ banner('Obtém a localização por GPS antes de cadastrar.', false); return; }
   try{
-    const tenant = await chamar('/api/tenants', {method:'POST', body: JSON.stringify({nome, zona, lat:gpsLat, lng:gpsLng, whatsappNumero})});
-    banner('Loja cadastrada com sucesso.', true);
+    const tenant = await chamar('/api/tenants', {method:'POST', body: JSON.stringify({nome, zona, lat:gpsLat, lng:gpsLng, whatsappNumero, nif})});
+
+    if(midiasTexto){
+      const urls = midiasTexto.split('\n').map(u=>u.trim()).filter(Boolean);
+      for(const url of urls){
+        const tipo = /\.(mp4|mov|webm)$/i.test(url) ? 'video' : 'imagem';
+        try{ await chamar(`/api/tenants/${tenant.id}/midias`, {method:'POST', body: JSON.stringify({tipo, url})}); }
+        catch(e){ console.error('Falha ao gravar mídia', url, e); }
+      }
+    }
+
+    banner('Loja cadastrada — fica pendente de validação manual pela equipa Mornaca.', true);
     await entrarComoTenant(tenant.id);
   }catch(e){
     banner(`Falha ao cadastrar: ${e.message}`, false);
@@ -281,6 +300,7 @@ async function carregarPortal(){
   tenantActual = t;
   document.getElementById('stats-row').innerHTML = `
     <div class="stat"><div class="n">${t.estado}</div><div class="l">Estado no ranking</div></div>
+    <div class="stat"><div class="n">${t.validado ? 'Sim' : 'Pendente'}</div><div class="l">Validação da equipa</div></div>
     <div class="stat"><div class="n">${Number(t.saldo_aberto).toLocaleString('pt-PT')} Kz</div><div class="l">Saldo em aberto</div></div>
     <div class="stat"><div class="n">${Math.round(t.taxa_confirmacao)}%</div><div class="l">Taxa de confirmação</div></div>
     <div class="stat"><div class="n">${Math.round(t.pontualidade)}%</div><div class="l">Pontualidade</div></div>
@@ -288,8 +308,21 @@ async function carregarPortal(){
   const leads = await chamar('/api/leads?tenantId='+t.id);
   const tbody = document.getElementById('leads-tbody');
   tbody.innerHTML = leads.length===0
-    ? '<tr><td colspan="4" class="empty">Ainda sem clientes gerados.</td></tr>'
-    : leads.map(l=>`<tr><td>${l.codigo}</td><td>${l.produto_id}</td><td>${l.status}</td><td>${new Date(l.criado_em).toLocaleDateString('pt-PT')}</td></tr>`).join('');
+    ? '<tr><td colspan="5" class="empty">Ainda sem clientes gerados.</td></tr>'
+    : leads.map(l=>`<tr><td>${l.codigo}</td><td>${l.produto_id}</td><td>${l.status}</td><td>${new Date(l.criado_em).toLocaleDateString('pt-PT')}</td><td><button class="mini-btn" onclick="denunciarCliente('${l.codigo}')">Denunciar</button></td></tr>`).join('');
+}
+
+async function denunciarCliente(leadCodigo){
+  const motivo = prompt('Descreve o motivo da denúncia deste cliente:');
+  if(!motivo || !motivo.trim()) return;
+  try{
+    await chamar('/api/denuncias', {method:'POST', body: JSON.stringify({
+      leadCodigo, origem:'fornecedor', motivo: motivo.trim()
+    })});
+    banner('Denúncia registada — a equipa vai analisar.', true);
+  }catch(e){
+    banner(`Falha ao registar denúncia: ${e.message}`, false);
+  }
 }
 
 document.getElementById('actualizar-produto-btn').addEventListener('click', async ()=>{
