@@ -132,6 +132,13 @@
     </label>
     <div class="hint" style="margin:6px 0 0;">Sem imagem, o cliente vê um ícone genérico. Preço promocional tem de ser menor que o normal — apaga o campo para remover a promoção. Quantidade é opcional — sem ela, o stock funciona só pelo botão Disponível/Sem stock.</div>
     <button class="btn secondary" id="actualizar-produto-btn" style="margin-top:10px;">Actualizar</button>
+
+    <p class="hint" style="margin-top:24px;">Validar cupão de desconto do cliente</p>
+    <div class="panel row">
+      <div class="field"><label>Código do cupão (ex: MON-X7K4P9)</label><input id="cupom-token" placeholder="MON-XXXXXX" /></div>
+      <button class="btn secondary" id="validar-cupom-btn" style="align-self:flex-end;">Validar</button>
+    </div>
+    <div id="cupom-resultado"></div>
   </section>
 </main>
 
@@ -348,6 +355,36 @@ document.getElementById('actualizar-produto-btn').addEventListener('click', asyn
     banner(`Falha ao actualizar: ${e.message}`, false);
   }
 });
+
+document.getElementById('validar-cupom-btn').addEventListener('click', async ()=>{
+  const token = document.getElementById('cupom-token').value.trim().toUpperCase();
+  if(!token){ banner('Escreve o código do cupão.', false); return; }
+  try{
+    const cupom = await chamar('/api/cupons/'+encodeURIComponent(token));
+    const cor = cupom.valido ? 'var(--signal-green)' : 'var(--signal-red)';
+    const estadoTexto = cupom.usado ? 'JÁ UTILIZADO' : cupom.expirado ? 'EXPIRADO' : 'VÁLIDO';
+    document.getElementById('cupom-resultado').innerHTML = `
+      <div class="panel" style="border-color:${cor};">
+        <div style="font-family:'Oswald',sans-serif; font-size:22px; font-weight:700; color:${cor};">${cupom.percentual}% de desconto</div>
+        <div class="hint" style="margin:6px 0;">Estado: ${estadoTexto} · Expira: ${new Date(cupom.expiraEm).toLocaleDateString('pt-PT')}</div>
+        ${cupom.valido ? `<button class="btn secondary" onclick="marcarCupomUsado('${cupom.token}')">Marcar como utilizado</button>` : ''}
+      </div>
+    `;
+  }catch(e){
+    banner(`Falha ao validar cupão: ${e.message}`, false);
+  }
+});
+
+async function marcarCupomUsado(token){
+  try{
+    await chamar(`/api/cupons/${token}/usar`, {method:'POST'});
+    banner('Cupão marcado como utilizado.', true);
+    document.getElementById('cupom-resultado').innerHTML = '';
+    document.getElementById('cupom-token').value = '';
+  }catch(e){
+    banner(`Falha ao marcar cupão: ${e.message}`, false);
+  }
+}
 
 (async function init(){
   const guardado = localStorage.getItem('mornaca_fornecedor_id');
