@@ -115,11 +115,13 @@
 
     <p class="hint">Fotos/vídeos de referência do local</p>
     <div id="midias-lista" class="panel"></div>
-    <div class="panel row">
-      <div class="field"><label>Tipo</label><select id="midia-tipo"><option value="imagem">Foto</option><option value="video">Vídeo</option></select></div>
-      <div class="field"><label>Link da foto/vídeo</label><input id="midia-url" placeholder="https://..." /></div>
-      <button class="btn secondary" id="adicionar-midia-btn" style="align-self:flex-end;">Adicionar</button>
-      <button class="btn secondary" id="ajuda-midia-btn" style="align-self:flex-end;" type="button">Como obter um link?</button>
+    <div class="panel">
+      <label for="midia-urls">Links das fotos/vídeos (um por linha — podes colar vários de uma vez)</label>
+      <textarea id="midia-urls" rows="4" style="width:100%; margin-top:6px; background:var(--asphalt-3); color:var(--white); border:1px solid var(--line); border-radius:6px; padding:10px; font-family:'IBM Plex Mono',monospace; font-size:12px;" placeholder="https://...&#10;https://...&#10;https://... (vídeo)"></textarea>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn secondary" id="adicionar-midia-btn">Adicionar todas</button>
+        <button class="btn secondary" id="ajuda-midia-btn" type="button">Como obter um link?</button>
+      </div>
     </div>
 
     <p class="hint">Os teus produtos cadastrados</p>
@@ -368,21 +370,9 @@ async function carregarPortal(){
 }
 
 async function validarCompra(codigo){
-  const valorTexto = prompt('Valor da venda (Kz) — usado para calcular a comissão de 5%:');
-  if(valorTexto === null) return; // cancelou
-  const valorVenda = valorTexto.trim() ? Number(valorTexto.trim()) : null;
-  if(valorTexto.trim() && (isNaN(valorVenda) || valorVenda <= 0)){
-    banner('Valor inválido — escreve só o número, sem "Kz".', false);
-    return;
-  }
   try{
-    const resultado = await chamar(`/api/leads/${codigo}/confirmar`, {method:'POST', body: JSON.stringify({origem:'fornecedor', valorVenda})});
-    if(resultado.temAmbas){
-      const comissaoTexto = resultado.comissaoCobrada > 0 ? ` Comissão de ${resultado.comissaoCobrada.toLocaleString('pt-PT')} Kz já lançada no teu saldo.` : '';
-      banner(`Compra validada! Cliente já confirmou também — pontos atribuídos.${comissaoTexto}`, true);
-    } else {
-      banner('Compra validada da tua parte. Falta o cliente confirmar pelo WhatsApp da Mornaca ou pelo portal dele.', true);
-    }
+    const resultado = await chamar(`/api/leads/${codigo}/confirmar`, {method:'POST', body: JSON.stringify({origem:'fornecedor'})});
+    banner(resultado.temAmbas ? 'Compra validada! Cliente já confirmou também — pontos atribuídos.' : 'Compra validada da tua parte. Falta o cliente confirmar pelo WhatsApp da Mornaca ou pelo portal dele.', true);
     await carregarPortal();
   }catch(e){ banner(`Falha ao validar: ${e.message}`, false); }
 }
@@ -399,24 +389,37 @@ async function semCompra(codigo){
 async function carregarMidias(){
   const midias = await chamar(`/api/tenants/${tenantActual.id}/midias`);
   const div = document.getElementById('midias-lista');
-  div.innerHTML = midias.length===0
-    ? '<p class="empty">Ainda sem fotos/vídeos adicionados.</p>'
-    : midias.map(m=>`<div class="midia-item">
-        <span>${m.tipo==='video'?'🎥':'📷'} <a class="midia-link" href="${m.url}" target="_blank" rel="noopener">${m.url}</a></span>
-        <button class="mini-btn perigo" onclick="removerMidia('${m.id}')">Remover</button>
-      </div>`).join('');
+  if(midias.length===0){
+    div.innerHTML = '<p class="empty">Ainda sem fotos/vídeos adicionados.</p>';
+    return;
+  }
+  div.innerHTML = `<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:10px;">
+    ${midias.map(m=>`
+      <div style="position:relative;">
+        ${m.tipo==='video'
+          ? `<a href="${m.url}" target="_blank" rel="noopener" style="display:flex; align-items:center; justify-content:center; height:90px; background:var(--asphalt-3); border-radius:6px; text-decoration:none; color:var(--road-yellow); font-size:24px;">🎥</a>`
+          : `<img src="${m.url}" style="width:100%; height:90px; object-fit:cover; border-radius:6px;" onerror="this.style.opacity=0.3" />`}
+        <button class="mini-btn perigo" style="position:absolute; top:4px; right:4px; padding:2px 6px;" onclick="removerMidia('${m.id}')">✕</button>
+      </div>
+    `).join('')}
+  </div>`;
 }
 
 document.getElementById('adicionar-midia-btn').addEventListener('click', async ()=>{
-  const tipo = document.getElementById('midia-tipo').value;
-  const url = document.getElementById('midia-url').value.trim();
-  if(!url){ banner('Cola um link antes de adicionar.', false); return; }
-  try{
-    await chamar(`/api/tenants/${tenantActual.id}/midias`, {method:'POST', body: JSON.stringify({tipo, url})});
-    document.getElementById('midia-url').value = '';
-    banner('Mídia adicionada.', true);
-    await carregarMidias();
-  }catch(e){ banner(`Falha ao adicionar: ${e.message}`, false); }
+  const texto = document.getElementById('midia-urls').value.trim();
+  if(!texto){ banner('Cola pelo menos um link antes de adicionar.', false); return; }
+  const urls = texto.split('\n').map(u=>u.trim()).filter(Boolean);
+  let sucesso = 0, falhas = 0;
+  for(const url of urls){
+    const tipo = /\.(mp4|mov|webm|avi)(\?.*)?$/i.test(url) ? 'video' : 'imagem';
+    try{
+      await chamar(`/api/tenants/${tenantActual.id}/midias`, {method:'POST', body: JSON.stringify({tipo, url})});
+      sucesso++;
+    }catch(e){ falhas++; console.error('Falha ao adicionar mídia', url, e); }
+  }
+  document.getElementById('midia-urls').value = '';
+  banner(falhas===0 ? `${sucesso} mídia(s) adicionada(s).` : `${sucesso} adicionada(s), ${falhas} falharam.`, falhas===0);
+  await carregarMidias();
 });
 
 async function removerMidia(midiaId){
