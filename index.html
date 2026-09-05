@@ -368,9 +368,21 @@ async function carregarPortal(){
 }
 
 async function validarCompra(codigo){
+  const valorTexto = prompt('Valor da venda (Kz) — usado para calcular a comissão de 5%:');
+  if(valorTexto === null) return; // cancelou
+  const valorVenda = valorTexto.trim() ? Number(valorTexto.trim()) : null;
+  if(valorTexto.trim() && (isNaN(valorVenda) || valorVenda <= 0)){
+    banner('Valor inválido — escreve só o número, sem "Kz".', false);
+    return;
+  }
   try{
-    const resultado = await chamar(`/api/leads/${codigo}/confirmar`, {method:'POST', body: JSON.stringify({origem:'fornecedor'})});
-    banner(resultado.temAmbas ? 'Compra validada! Cliente já confirmou também — pontos atribuídos.' : 'Compra validada da tua parte. Falta o cliente confirmar pelo WhatsApp da Mornaca.', true);
+    const resultado = await chamar(`/api/leads/${codigo}/confirmar`, {method:'POST', body: JSON.stringify({origem:'fornecedor', valorVenda})});
+    if(resultado.temAmbas){
+      const comissaoTexto = resultado.comissaoCobrada > 0 ? ` Comissão de ${resultado.comissaoCobrada.toLocaleString('pt-PT')} Kz já lançada no teu saldo.` : '';
+      banner(`Compra validada! Cliente já confirmou também — pontos atribuídos.${comissaoTexto}`, true);
+    } else {
+      banner('Compra validada da tua parte. Falta o cliente confirmar pelo WhatsApp da Mornaca ou pelo portal dele.', true);
+    }
     await carregarPortal();
   }catch(e){ banner(`Falha ao validar: ${e.message}`, false); }
 }
