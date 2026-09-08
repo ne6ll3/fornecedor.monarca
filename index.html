@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monarca — Portal do Fornecedor</title>
+<title>Mornaca — Portal do Fornecedor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -59,7 +59,7 @@
 <header>
   <div class="brand">
     <div class="brand-mark">M</div>
-    <div><h1>Monarca</h1><span>Portal do fornecedor</span></div>
+    <div><h1>Mornaca</h1><span>Portal do fornecedor</span></div>
   </div>
   <button id="sair-btn">Sair</button>
 </header>
@@ -117,11 +117,18 @@
     <p class="hint">Fotos/vídeos de referência do local</p>
     <div id="midias-lista" class="panel"></div>
     <div class="panel">
-      <label for="midia-urls">Links das fotos/vídeos (um por linha — podes colar vários de uma vez)</label>
-      <textarea id="midia-urls" rows="4" style="width:100%; margin-top:6px; background:var(--asphalt-3); color:var(--white); border:1px solid var(--line); border-radius:6px; padding:10px; font-family:'IBM Plex Mono',monospace; font-size:12px;" placeholder="https://...&#10;https://...&#10;https://... (vídeo)"></textarea>
-      <div class="row" style="margin-top:10px;">
-        <button class="btn secondary" id="adicionar-midia-btn">Adicionar todas</button>
-        <button class="btn secondary" id="ajuda-midia-btn" type="button">Como obter um link?</button>
+      <label for="midia-arquivos">Enviar fotos/vídeos (sem precisares de conta em lado nenhum)</label>
+      <input type="file" id="midia-arquivos" accept="image/*,video/*" multiple style="margin-top:8px; width:100%; color:var(--white);" />
+      <div class="hint" style="margin-top:6px;">Imagem até 8MB. Vídeo até 30MB e entre 5 e 15 segundos (limite do servidor de upload).</div>
+      <button class="btn secondary" id="enviar-midia-btn" style="margin-top:10px;">Enviar</button>
+      <div id="midia-upload-status" class="hint" style="margin-top:8px;"></div>
+      <p style="margin-top:14px;"><a href="#" id="toggle-link-manual" style="color:var(--road-yellow); font-size:12px;">ou cola um link manualmente</a></p>
+      <div id="midia-link-manual-wrap" style="display:none; margin-top:10px;">
+        <textarea id="midia-urls" rows="3" style="width:100%; background:var(--asphalt-3); color:var(--white); border:1px solid var(--line); border-radius:6px; padding:10px; font-family:'IBM Plex Mono',monospace; font-size:12px;" placeholder="https://...&#10;https://..."></textarea>
+        <div class="row" style="margin-top:10px;">
+          <button class="btn secondary" id="adicionar-midia-btn">Adicionar todas</button>
+          <button class="btn secondary" id="ajuda-midia-btn" type="button">Como obter um link?</button>
+        </div>
       </div>
     </div>
 
@@ -146,7 +153,12 @@
       <div class="field"><label>Preço promocional (opcional)</label><input id="prod-promo" type="number" placeholder="deixa em branco para remover" /></div>
       <div class="field"><label>Stock (disponível/indisponível)</label><select id="prod-stock"><option value="1">Disponível</option><option value="0">Sem stock</option></select></div>
       <div class="field"><label>Quantidade em stock (opcional)</label><input id="prod-quantidade" type="number" min="0" placeholder="deixa em branco se não quiseres controlar" /></div>
-      <div class="field"><label>URL da imagem (opcional)</label><input id="prod-imagem" placeholder="https://..." /></div>
+      <div class="field">
+        <label>Imagem do produto (opcional)</label>
+        <input id="prod-imagem" placeholder="https://..." />
+        <input type="file" id="prod-imagem-arquivo" accept="image/*" style="margin-top:6px; width:100%; color:var(--white); font-size:11px;" />
+        <button type="button" class="mini-btn" id="prod-imagem-enviar-btn" style="margin-top:4px;">Enviar ficheiro</button>
+      </div>
     </div>
     <label style="display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#C9C6BE; text-transform:none; margin-top:8px;">
       <input type="checkbox" id="prod-auto-desativar" checked style="width:auto; flex:none;" />
@@ -168,7 +180,7 @@
   <div class="modal-box">
     <button class="modal-close" id="fechar-modal-ajuda" aria-label="Fechar">✕</button>
     <h3>Como obter um link de foto ou vídeo</h3>
-    <p class="hint" style="margin:10px 0;">A Monarca não guarda ficheiros — só o link. Recomendado, é da própria Monarca:</p>
+    <p class="hint" style="margin:10px 0;">A Mornaca não guarda ficheiros — só o link. Recomendado, é da própria Monarca:</p>
     <ol style="font-size:13px; line-height:1.7; padding-left:18px;">
       <li><strong>Monarca Upload (recomendado)</strong> — vai a <a href="https://monarca-upload.onrender.com/" target="_blank" rel="noopener" style="color:var(--road-yellow)">monarca-upload.onrender.com</a>, cria uma conta rápida, carrega a foto/vídeo, e copia o link gerado para aqui.</li>
       <li><strong>Google Fotos / Google Drive</strong> — carrega a foto, clica com o botão direito → "Obter link" → activa "Qualquer pessoa com o link" → cola aqui.</li>
@@ -234,7 +246,7 @@ document.getElementById('cadastrar-btn').addEventListener('click', async ()=>{
       }
     }
 
-    banner('Loja cadastrada — fica pendente de validação manual pela equipa Monarca.', true);
+    banner('Loja cadastrada — fica pendente de validação manual pela equipa Mornaca.', true);
     await entrarComoTenant(tenant.id);
   }catch(e){
     banner(`Falha ao cadastrar: ${e.message}`, false);
@@ -373,7 +385,7 @@ async function carregarPortal(){
 async function validarCompra(codigo){
   try{
     const resultado = await chamar(`/api/leads/${codigo}/confirmar`, {method:'POST', body: JSON.stringify({origem:'fornecedor'})});
-    banner(resultado.temAmbas ? 'Compra validada! Cliente já confirmou também — pontos atribuídos.' : 'Compra validada da tua parte. Falta o cliente confirmar pelo WhatsApp da Monarca ou pelo portal dele.', true);
+    banner(resultado.temAmbas ? 'Compra validada! Cliente já confirmou também — pontos atribuídos.' : 'Compra validada da tua parte. Falta o cliente confirmar pelo WhatsApp da Mornaca ou pelo portal dele.', true);
     await carregarPortal();
   }catch(e){ banner(`Falha ao validar: ${e.message}`, false); }
 }
@@ -412,6 +424,61 @@ function mostrarMidiaIndisponivelFornecedor(el, url){
   div.innerHTML = `Indisponível<br><a href="${url}" target="_blank" rel="noopener" style="color:var(--road-yellow);font-size:9px;">abrir link</a>`;
   el.replaceWith(div);
 }
+
+document.getElementById('prod-imagem-enviar-btn').addEventListener('click', async ()=>{
+  const input = document.getElementById('prod-imagem-arquivo');
+  const ficheiro = input.files && input.files[0];
+  if(!ficheiro){ banner('Escolhe uma imagem primeiro.', false); return; }
+  try{
+    const formData = new FormData();
+    formData.append('file', ficheiro);
+    const resp = await fetch(API_BASE_URL + '/api/uploads', {method:'POST', body: formData});
+    const dados = await resp.json();
+    if(!resp.ok) throw new Error(dados.erro || 'Falha no upload');
+    document.getElementById('prod-imagem').value = dados.url;
+    banner('Imagem enviada — agora clica em "Actualizar" para gravar no produto.', true);
+    input.value = '';
+  }catch(e){ banner(`Falha ao enviar imagem: ${e.message}`, false); }
+});
+
+document.getElementById('toggle-link-manual').addEventListener('click', (e)=>{
+  e.preventDefault();
+  const wrap = document.getElementById('midia-link-manual-wrap');
+  wrap.style.display = wrap.style.display==='none' ? 'block' : 'none';
+});
+
+document.getElementById('enviar-midia-btn').addEventListener('click', async ()=>{
+  const input = document.getElementById('midia-arquivos');
+  const ficheiros = Array.from(input.files || []);
+  if(ficheiros.length===0){ banner('Escolhe pelo menos um ficheiro.', false); return; }
+
+  const statusEl = document.getElementById('midia-upload-status');
+  let sucesso = 0, falhas = 0;
+
+  for(let i=0; i<ficheiros.length; i++){
+    const ficheiro = ficheiros[i];
+    statusEl.textContent = `A enviar ${i+1} de ${ficheiros.length}: ${ficheiro.name}...`;
+    try{
+      const formData = new FormData();
+      formData.append('file', ficheiro);
+      const respUpload = await fetch(API_BASE_URL + '/api/uploads', { method:'POST', body: formData });
+      const dadosUpload = await respUpload.json();
+      if(!respUpload.ok) throw new Error(dadosUpload.erro || 'Falha no upload');
+
+      await chamar(`/api/tenants/${tenantActual.id}/midias`, {method:'POST', body: JSON.stringify({tipo: dadosUpload.tipo, url: dadosUpload.url})});
+      sucesso++;
+    }catch(e){
+      falhas++;
+      console.error('Falha ao enviar', ficheiro.name, e);
+      statusEl.textContent = `Falha em "${ficheiro.name}": ${e.message}`;
+    }
+  }
+
+  input.value = '';
+  banner(falhas===0 ? `${sucesso} ficheiro(s) enviado(s) com sucesso.` : `${sucesso} enviado(s), ${falhas} falharam.`, falhas===0);
+  if(falhas===0) statusEl.textContent = '';
+  await carregarMidias();
+});
 
 document.getElementById('adicionar-midia-btn').addEventListener('click', async ()=>{
   const texto = document.getElementById('midia-urls').value.trim();
