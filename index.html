@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mornaca — Portal do Fornecedor</title>
+<title>Monarca — Portal do Fornecedor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -59,7 +59,7 @@
 <header>
   <div class="brand">
     <div class="brand-mark">M</div>
-    <div><h1>Mornaca</h1><span>Portal do fornecedor</span></div>
+    <div><h1>Monarca</h1><span>Portal do fornecedor</span></div>
   </div>
   <button id="sair-btn">Sair</button>
 </header>
@@ -180,7 +180,7 @@
   <div class="modal-box">
     <button class="modal-close" id="fechar-modal-ajuda" aria-label="Fechar">✕</button>
     <h3>Como obter um link de foto ou vídeo</h3>
-    <p class="hint" style="margin:10px 0;">A Mornaca não guarda ficheiros — só o link. Recomendado, é da própria Monarca:</p>
+    <p class="hint" style="margin:10px 0;">A Monarca não guarda ficheiros — só o link. Recomendado, é da própria Monarca:</p>
     <ol style="font-size:13px; line-height:1.7; padding-left:18px;">
       <li><strong>Monarca Upload (recomendado)</strong> — vai a <a href="https://monarca-upload.onrender.com/" target="_blank" rel="noopener" style="color:var(--road-yellow)">monarca-upload.onrender.com</a>, cria uma conta rápida, carrega a foto/vídeo, e copia o link gerado para aqui.</li>
       <li><strong>Google Fotos / Google Drive</strong> — carrega a foto, clica com o botão direito → "Obter link" → activa "Qualquer pessoa com o link" → cola aqui.</li>
@@ -246,7 +246,7 @@ document.getElementById('cadastrar-btn').addEventListener('click', async ()=>{
       }
     }
 
-    banner('Loja cadastrada — fica pendente de validação manual pela equipa Mornaca.', true);
+    banner('Loja cadastrada — fica pendente de validação manual pela equipa Monarca.', true);
     await entrarComoTenant(tenant.id);
   }catch(e){
     banner(`Falha ao cadastrar: ${e.message}`, false);
@@ -385,7 +385,7 @@ async function carregarPortal(){
 async function validarCompra(codigo){
   try{
     const resultado = await chamar(`/api/leads/${codigo}/confirmar`, {method:'POST', body: JSON.stringify({origem:'fornecedor'})});
-    banner(resultado.temAmbas ? 'Compra validada! Cliente já confirmou também — pontos atribuídos.' : 'Compra validada da tua parte. Falta o cliente confirmar pelo WhatsApp da Mornaca ou pelo portal dele.', true);
+    banner(resultado.temAmbas ? 'Compra validada! Cliente já confirmou também — pontos atribuídos.' : 'Compra validada da tua parte. Falta o cliente confirmar pelo WhatsApp da Monarca ou pelo portal dele.', true);
     await carregarPortal();
   }catch(e){ banner(`Falha ao validar: ${e.message}`, false); }
 }
