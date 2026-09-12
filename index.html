@@ -3,63 +3,136 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monarca — Portal do Fornecedor</title>
+<title>Mornaca — Portal do Fornecedor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --asphalt:#16181A; --asphalt-2:#1F2224; --asphalt-3:#292D30; --line:#3A3F43;
-    --paper:#F3F1EC; --road-yellow:#F2C14E; --signal-green:#4C9A6A; --signal-red:#D64545;
-    --steel:#8A8F94; --white:#F5F4F0;
+    --bg:#0A0A0B; --surface:#141416; --surface-2:#1C1C1F; --border:#28282C;
+    --text:#F5F5F4; --text-dim:#8C8C90; --text-faint:#525256;
+    --accent:#C9A961; --accent-dim:rgba(201,169,97,.14);
+    --success:#4A9B6E; --success-dim:rgba(74,155,110,.14);
+    --danger:#C4574A; --danger-dim:rgba(196,87,74,.14);
   }
   *{box-sizing:border-box;}
-  body{margin:0; background:var(--asphalt); color:var(--white); font-family:'IBM Plex Sans',sans-serif;}
-  header{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:16px 20px; border-bottom:2px dashed var(--line); background:var(--asphalt-2);}
-  .brand{display:flex; align-items:center; gap:10px;}
-  .brand-mark{width:34px;height:34px;border-radius:4px; background:var(--road-yellow); display:flex;align-items:center;justify-content:center; font-family:'Oswald',sans-serif; font-weight:700; color:var(--asphalt); font-size:16px; transform:rotate(-3deg);}
-  h1{font-family:'Oswald',sans-serif; font-weight:600; font-size:20px; letter-spacing:.04em; margin:0; text-transform:uppercase;}
-  header span{display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--steel); letter-spacing:.1em; text-transform:uppercase;}
-  #sair-btn{display:none; font-family:'IBM Plex Mono',monospace; font-size:11px; background:transparent; border:1px solid var(--line); color:var(--steel); padding:6px 10px; border-radius:6px; cursor:pointer;}
-  main{padding:20px; max-width:800px; margin:0 auto;}
-  .hint{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--steel); margin:0 0 14px; text-transform:uppercase; letter-spacing:.07em;}
-  .panel{background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px;}
-  .row{display:flex; flex-wrap:wrap; gap:10px;}
-  select, input{background:var(--asphalt-3); color:var(--white); border:1px solid var(--line); padding:11px 12px; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:13px; flex:1; min-width:150px;}
-  label{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--steel); text-transform:uppercase; letter-spacing:.05em; display:block; margin-bottom:4px;}
-  .field{flex:1; min-width:150px;}
-  .btn{font-family:'Oswald',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:.04em; background:var(--road-yellow); color:var(--asphalt); border:none; padding:12px 18px; border-radius:6px; cursor:pointer; font-weight:600;}
-  .btn.secondary{background:var(--asphalt-3); color:var(--white); border:1px solid var(--line);}
-  .btn:hover{filter:brightness(1.08);}
-  .status-banner{display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; margin-bottom:16px;}
-  .status-ok{background:rgba(76,154,106,.15); color:#6fd196; border:1px solid rgba(76,154,106,.35);}
-  .status-erro{background:rgba(214,69,69,.15); color:#ff8080; border:1px solid rgba(214,69,69,.35);}
-  .stats-row{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;}
-  .stat{background:var(--asphalt-2); border:1px solid var(--line); border-radius:8px; padding:14px 16px; flex:1; min-width:130px;}
-  .stat .n{font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; color:var(--road-yellow);}
-  .stat .l{font-size:10.5px; color:var(--steel); text-transform:uppercase; letter-spacing:.05em; margin-top:2px;}
-  table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono',monospace; font-size:12px;}
-  thead th{text-align:left; padding:9px 7px; color:var(--steel); text-transform:uppercase; font-size:10px; border-bottom:2px dashed var(--line);}
-  tbody td{padding:9px 7px; border-bottom:1px solid var(--asphalt-3);}
-  .empty{color:var(--steel); font-family:'IBM Plex Mono',monospace; font-size:12.5px;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.5;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  header{display:flex; align-items:center; justify-content:space-between; padding:28px 24px; max-width:640px; margin:0 auto;}
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand-mark{width:28px; height:28px; border-radius:7px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--bg); font-size:14px;}
+  .brand-name{font-weight:600; font-size:15px; letter-spacing:-.01em;}
+  .brand-sub{font-size:11px; color:var(--text-faint); margin-top:1px;}
+  #sair-btn{display:none; background:none; border:none; color:var(--text-faint); font-size:13px; cursor:pointer; font-family:inherit;}
+  #sair-btn:hover{color:var(--text-dim);}
+
+  main{padding:0 24px 80px; max-width:640px; margin:0 auto;}
   .view{display:none;} .view.active{display:block;}
-  .gps-status{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--steel); margin-top:6px;}
-  .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; z-index:999; padding:20px;}
-  .modal-box{background:var(--asphalt-2); border:1px solid var(--line); border-radius:10px; padding:24px; max-width:480px; width:100%; position:relative;}
-  .modal-close{position:absolute; top:14px; right:14px; background:none; border:1px solid var(--line); color:var(--white); border-radius:6px; padding:4px 10px; cursor:pointer;}
-  .midia-item{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--asphalt-3); font-family:'IBM Plex Mono',monospace; font-size:12px;}
-  .midia-item:last-child{border-bottom:none;}
-  .midia-link{color:var(--road-yellow); text-decoration:underline; word-break:break-all;}
-  .badge-pendente{background:var(--road-yellow); color:var(--asphalt); font-family:'Oswald',sans-serif; font-size:9.5px; font-weight:700; text-transform:uppercase; padding:2px 7px; border-radius:4px; margin-left:6px;}
-  .mini-btn{font-family:'IBM Plex Mono',monospace; font-size:10.5px; background:transparent; border:1px solid var(--line); color:#C9C6BE; padding:4px 8px; border-radius:4px; cursor:pointer; margin-right:4px;}
-  .mini-btn:hover{border-color:var(--road-yellow); color:var(--road-yellow);}
-  .mini-btn.perigo:hover{border-color:var(--signal-red); color:var(--signal-red);}
+
+  h2{font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); margin:44px 0 14px;}
+  h2:first-of-type{margin-top:8px;}
+
+  .status-banner{padding:12px 16px; border-radius:10px; font-size:13px; margin-bottom:20px;}
+  .status-ok{background:var(--success-dim); color:#7FC9A0;}
+  .status-erro{background:var(--danger-dim); color:#E08A7E;}
+
+  /* --- form primitives --- */
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:12px; color:var(--text-dim); margin-bottom:6px;}
+  .row{display:flex; flex-wrap:wrap; gap:16px;}
+  .row .field{flex:1; min-width:160px;}
+  input, select, textarea{
+    width:100%; background:var(--surface); color:var(--text); border:1px solid var(--border);
+    padding:12px 14px; border-radius:9px; font-family:inherit; font-size:14px;
+  }
+  input:focus, select:focus, textarea:focus{outline:none; border-color:var(--accent);}
+  input[type=file]{padding:9px 12px; font-size:12px; color:var(--text-dim);}
+  input[type=checkbox]{width:auto;}
+
+  .btn{
+    font-family:inherit; font-size:14px; font-weight:600; border:none; border-radius:9px;
+    padding:13px 22px; cursor:pointer; background:var(--accent); color:var(--bg);
+  }
+  .btn:hover{filter:brightness(1.08);}
+  .btn.secondary{background:var(--surface-2); color:var(--text); border:1px solid var(--border);}
+  .btn.ghost{background:none; color:var(--accent); padding:8px 0; text-decoration:underline; text-underline-offset:3px;}
+  .btn.full{width:100%;}
+  .btn-sm{font-family:inherit; font-size:12px; font-weight:500; background:none; border:1px solid var(--border); color:var(--text-dim); padding:6px 12px; border-radius:7px; cursor:pointer;}
+  .btn-sm:hover{border-color:var(--accent); color:var(--accent);}
+  .btn-sm.perigo:hover{border-color:var(--danger); color:#E08A7E;}
+  .btn-sm.ok:hover{border-color:var(--success); color:#7FC9A0;}
+
+  /* --- hero stats: only what matters, at a glance --- */
+  .hero{padding:28px 0 8px;}
+  .hero-saldo{font-size:42px; font-weight:700; letter-spacing:-.02em; line-height:1;}
+  .hero-saldo-label{font-size:13px; color:var(--text-dim); margin-top:8px;}
+  .hero-tags{display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;}
+  .tag{font-size:12px; padding:5px 11px; border-radius:20px; background:var(--surface-2); color:var(--text-dim);}
+  .tag.accent{background:var(--accent-dim); color:var(--accent);}
+  .tag.success{background:var(--success-dim); color:#7FC9A0;}
+  .tag.danger{background:var(--danger-dim); color:#E08A7E;}
+
+  /* --- disclosure (progressive detail) --- */
+  details.disclosure{margin-top:10px; border-top:1px solid var(--border); padding-top:14px;}
+  details.disclosure summary{cursor:pointer; font-size:13px; color:var(--text-dim); list-style:none; display:flex; align-items:center; gap:6px; user-select:none;}
+  details.disclosure summary::-webkit-details-marker{display:none;}
+  details.disclosure summary::before{content:'+'; color:var(--accent); font-weight:700; width:14px;}
+  details.disclosure[open] summary::before{content:'−';}
+  details.disclosure .disclosure-body{padding-top:16px;}
+
+  .kv-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 20px;}
+  .kv{font-size:13px;}
+  .kv .v{font-size:18px; font-weight:600; margin-top:2px;}
+  .kv .l{color:var(--text-faint); font-size:11px; text-transform:uppercase; letter-spacing:.04em;}
+
+  /* --- compact list rows (produtos, leads históricos) --- */
+  .row-item{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 0; border-bottom:1px solid var(--border);}
+  .row-item:last-child{border-bottom:none;}
+  .row-item .name{font-size:14px; font-weight:500;}
+  .row-item .meta{font-size:12px; color:var(--text-faint); margin-top:2px;}
+  .dot{width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:7px; flex-shrink:0;}
+  .dot-success{background:var(--success);} .dot-accent{background:var(--accent);} .dot-faint{background:var(--text-faint);} .dot-danger{background:var(--danger);}
+
+  /* --- lead cards: the one thing that should always be visible and actionable --- */
+  .lead-card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:10px;}
+  .lead-card .top{display:flex; align-items:center; justify-content:space-between;}
+  .lead-card .codigo{font-size:15px; font-weight:600;}
+  .lead-card .produto{font-size:13px; color:var(--text-dim); margin-top:3px;}
+  .lead-card .acoes{display:flex; gap:8px; margin-top:14px;}
+  .lead-card .acoes .btn-sm{flex:1; text-align:center; padding:9px;}
+  .needs-action{background:var(--accent); color:var(--bg); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:3px 8px; border-radius:5px;}
+
+  .empty{color:var(--text-faint); font-size:13px; padding:8px 0;}
+
+  /* --- mídias grid --- */
+  .midia-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:8px;}
+  .midia-item{position:relative;}
+  .midia-item img, .midia-item video{width:100%; height:80px; object-fit:cover; border-radius:8px; background:var(--surface-2);}
+  .midia-remover{position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; background:rgba(0,0,0,.6); color:#fff; border:none; font-size:11px; cursor:pointer; line-height:1;}
+  .midia-erro{width:100%; height:80px; border-radius:8px; background:var(--surface-2); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:9px; text-align:center; padding:4px; color:var(--text-faint); gap:3px;}
+  .midia-erro a{color:var(--accent); font-size:9px;}
+
+  .gps-status{font-size:12px; color:var(--text-dim); margin-top:8px;}
+
+  .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,.8); display:flex; align-items:center; justify-content:center; z-index:999; padding:20px;}
+  .modal-box{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px; max-width:440px; width:100%; position:relative;}
+  .modal-box h3{font-size:16px; margin:0 0 4px;}
+  .modal-close{position:absolute; top:16px; right:16px; background:none; border:none; color:var(--text-dim); font-size:16px; cursor:pointer;}
+  .modal-box ol{font-size:13px; line-height:1.7; padding-left:18px; color:var(--text-dim);}
+  .modal-box ol strong{color:var(--text);}
+  .modal-box a{color:var(--accent);}
+
+  @media(max-width:480px){
+    .hero-saldo{font-size:34px;}
+    .kv-grid{grid-template-columns:1fr 1fr;}
+  }
 </style>
 </head>
 <body>
 <header>
   <div class="brand">
     <div class="brand-mark">M</div>
-    <div><h1>Monarca</h1><span>Portal do fornecedor</span></div>
+    <div><div class="brand-name">Mornaca</div><div class="brand-sub">Portal do fornecedor</div></div>
   </div>
   <button id="sair-btn">Sair</button>
 </header>
@@ -68,130 +141,138 @@
 
   <!-- LOGIN / IDENTIFICAÇÃO -->
   <section id="view-login" class="view active">
-    <p class="hint">Identifica-te pelo número de WhatsApp registado, ou cadastra a tua loja pela primeira vez</p>
-    <div class="panel">
-      <div class="row">
-        <div class="field"><label>O teu WhatsApp (com whatsapp: e +244)</label><input id="login-whatsapp" placeholder="whatsapp:+244923000000" /></div>
-      </div>
-      <div class="row" style="margin-top:12px;">
-        <button class="btn" id="entrar-btn">Entrar</button>
-        <button class="btn secondary" id="mostrar-cadastro-btn">Ainda não estou cadastrado</button>
-      </div>
+    <p style="color:var(--text-dim); font-size:14px; margin-bottom:24px;">Identifica-te pelo número de WhatsApp registado, ou cadastra a tua loja.</p>
+    <div class="field"><label>O teu WhatsApp</label><input id="login-whatsapp" placeholder="+244 923 000 000" /></div>
+    <div class="row" style="margin-top:4px;">
+      <button class="btn" id="entrar-btn">Entrar</button>
+      <button class="btn secondary" id="mostrar-cadastro-btn">Ainda não estou cadastrado</button>
     </div>
 
-    <div class="panel" id="cadastro-panel" style="display:none;">
-      <p class="hint" style="margin-bottom:10px;">Cadastro da loja — a localização é obtida automaticamente pelo GPS do teu telemóvel</p>
+    <div id="cadastro-panel" style="display:none; margin-top:36px; padding-top:28px; border-top:1px solid var(--border);">
+      <h2 style="margin-top:0;">Cadastro da loja</h2>
       <div class="row">
         <div class="field"><label>Nome da loja</label><input id="cad-nome" /></div>
         <div class="field"><label>Zona</label><input id="cad-zona" placeholder="ex: Camama" /></div>
-        <div class="field"><label>O teu WhatsApp</label><input id="cad-whatsapp" placeholder="whatsapp:+244923000000" /></div>
-        <div class="field"><label>NIF da loja</label><input id="cad-nif" placeholder="obrigatório — usado para validação manual" /></div>
       </div>
-      <div class="row" style="margin-top:10px;">
-        <div class="field" style="min-width:100%;">
-          <label>Fotos/vídeos de referência do local (um link por linha — opcional, mas acelera a validação e serve de perfil)</label>
-          <textarea id="cad-midias" rows="3" style="width:100%; background:var(--asphalt-3); color:var(--white); border:1px solid var(--line); border-radius:6px; padding:10px; font-family:'IBM Plex Mono',monospace; font-size:12px;" placeholder="https://...&#10;https://..."></textarea>
-          <div class="hint" style="margin-top:6px;">Sem link ainda? Usa o <a href="https://monarca-upload.onrender.com/" target="_blank" rel="noopener" style="color:var(--road-yellow)">Monarca Upload</a> para gerar um.</div>
-        </div>
+      <div class="row">
+        <div class="field"><label>O teu WhatsApp</label><input id="cad-whatsapp" placeholder="+244 923 000 000" /></div>
+        <div class="field"><label>NIF da loja</label><input id="cad-nif" placeholder="usado para validação manual" /></div>
       </div>
-      <div class="row" style="margin-top:10px;">
-        <button class="btn secondary" id="obter-gps-btn">📍 Usar a minha localização actual</button>
+      <div class="field">
+        <label>Fotos/vídeos de referência do local (opcional, acelera a validação)</label>
+        <textarea id="cad-midias" rows="2" placeholder="https://..."></textarea>
+        <div class="gps-status">Sem link? Usa o <a href="https://monarca-upload.onrender.com/" target="_blank" rel="noopener" style="color:var(--accent);">Monarca Upload</a>.</div>
       </div>
+      <button class="btn secondary" id="obter-gps-btn">Usar a minha localização actual</button>
       <div class="gps-status" id="gps-status">Localização ainda não obtida.</div>
-      <button class="btn" id="cadastrar-btn" style="margin-top:14px;">Cadastrar loja</button>
+      <button class="btn full" id="cadastrar-btn" style="margin-top:18px;">Cadastrar loja</button>
     </div>
   </section>
 
-  <!-- PAINEL DO FORNECEDOR (após login) -->
+  <!-- PORTAL -->
   <section id="view-portal" class="view">
-    <div class="stats-row" id="stats-row"></div>
 
-    <p class="hint">Os teus clientes recentes (gerados pela plataforma)</p>
-    <div style="overflow-x:auto; margin-bottom:20px;">
-      <table>
-        <thead><tr><th>Código</th><th>Produto</th><th>Estado</th><th>Data</th><th></th></tr></thead>
-        <tbody id="leads-tbody"></tbody>
-      </table>
+    <div class="hero">
+      <div class="hero-saldo mono" id="saldo-numero">— Kz</div>
+      <div class="hero-saldo-label">Saldo devido à Mornaca</div>
+      <div class="hero-tags" id="hero-tags"></div>
     </div>
 
-    <p class="hint">Fotos/vídeos de referência do local</p>
-    <div id="midias-lista" class="panel"></div>
-    <div class="panel">
-      <label for="midia-arquivos">Enviar fotos/vídeos (sem precisares de conta em lado nenhum)</label>
-      <input type="file" id="midia-arquivos" accept="image/*,video/*" multiple style="margin-top:8px; width:100%; color:var(--white);" />
-      <div class="hint" style="margin-top:6px;">Imagem até 8MB. Vídeo até 30MB e entre 5 e 15 segundos (limite do servidor de upload).</div>
-      <button class="btn secondary" id="enviar-midia-btn" style="margin-top:10px;">Enviar</button>
-      <div id="midia-upload-status" class="hint" style="margin-top:8px;"></div>
-      <p style="margin-top:14px;"><a href="#" id="toggle-link-manual" style="color:var(--road-yellow); font-size:12px;">ou cola um link manualmente</a></p>
-      <div id="midia-link-manual-wrap" style="display:none; margin-top:10px;">
-        <textarea id="midia-urls" rows="3" style="width:100%; background:var(--asphalt-3); color:var(--white); border:1px solid var(--line); border-radius:6px; padding:10px; font-family:'IBM Plex Mono',monospace; font-size:12px;" placeholder="https://...&#10;https://..."></textarea>
-        <div class="row" style="margin-top:10px;">
-          <button class="btn secondary" id="adicionar-midia-btn">Adicionar todas</button>
-          <button class="btn secondary" id="ajuda-midia-btn" type="button">Como obter um link?</button>
+    <details class="disclosure">
+      <summary>Mais detalhes da conta</summary>
+      <div class="disclosure-body kv-grid" id="detalhes-conta"></div>
+    </details>
+
+    <h2>Clientes</h2>
+    <div id="leads-pendentes"></div>
+    <details class="disclosure">
+      <summary>Histórico (<span id="historico-count">0</span>)</summary>
+      <div class="disclosure-body" id="leads-historico"></div>
+    </details>
+
+    <h2>Produtos</h2>
+    <div id="produtos-lista"></div>
+    <details class="disclosure" id="editor-produto-details">
+      <summary>Editar ou adicionar produto</summary>
+      <div class="disclosure-body">
+        <div class="row">
+          <div class="field"><label>Nome do produto novo (se não estiver na lista)</label><input id="novo-produto-nome" placeholder="ex: Filtro de óleo universal" /></div>
+          <button type="button" class="btn secondary" id="novo-produto-btn" style="align-self:flex-end; height:44px;">Adicionar à lista</button>
+        </div>
+        <div class="field"><label>Produto</label><select id="prod-select"></select></div>
+        <div class="row">
+          <div class="field"><label>Preço normal (Kz)</label><input id="prod-preco" type="number" /></div>
+          <div class="field"><label>Preço promocional (opcional)</label><input id="prod-promo" type="number" placeholder="deixa em branco para remover" /></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Stock</label><select id="prod-stock"><option value="1">Disponível</option><option value="0">Sem stock</option></select></div>
+          <div class="field"><label>Quantidade (opcional)</label><input id="prod-quantidade" type="number" min="0" placeholder="deixa em branco se não quiseres controlar" /></div>
+        </div>
+        <div class="field">
+          <label>Imagem do produto</label>
+          <input id="prod-imagem" placeholder="https://..." />
+          <input type="file" id="prod-imagem-arquivo" accept="image/*" style="margin-top:8px;" />
+          <button type="button" class="btn-sm" id="prod-imagem-enviar-btn" style="margin-top:6px;">Enviar ficheiro</button>
+        </div>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-dim); margin-bottom:16px;">
+          <input type="checkbox" id="prod-auto-desativar" checked />
+          Desactivar automaticamente ao chegar a zero
+        </label>
+        <button class="btn full" id="actualizar-produto-btn">Actualizar produto</button>
+      </div>
+    </details>
+
+    <h2>Fotos & vídeos do local</h2>
+    <div class="midia-grid" id="midias-lista"></div>
+    <details class="disclosure">
+      <summary>Adicionar fotos/vídeos</summary>
+      <div class="disclosure-body">
+        <div class="field">
+          <label>Enviar ficheiro (sem precisares de conta em lado nenhum)</label>
+          <input type="file" id="midia-arquivos" accept="image/*,video/*" multiple />
+          <div class="gps-status">Imagem até 8MB · Vídeo até 30MB, entre 5-15 segundos.</div>
+        </div>
+        <button class="btn secondary" id="enviar-midia-btn">Enviar</button>
+        <div class="gps-status" id="midia-upload-status"></div>
+        <p style="margin-top:16px;"><a href="#" id="toggle-link-manual" class="btn ghost" style="font-size:12px;">ou cola um link manualmente</a></p>
+        <div id="midia-link-manual-wrap" style="display:none;">
+          <textarea id="midia-urls" rows="2" placeholder="https://..."></textarea>
+          <div class="row" style="margin-top:10px;">
+            <button class="btn-sm" id="adicionar-midia-btn">Adicionar</button>
+            <button class="btn-sm" id="ajuda-midia-btn" type="button">Como obter um link?</button>
+          </div>
         </div>
       </div>
-    </div>
+    </details>
 
-    <p class="hint">Os teus produtos cadastrados</p>
-    <div style="overflow-x:auto; margin-bottom:20px;">
-      <table>
-        <thead><tr><th>Produto</th><th>Preço</th><th>Promo</th><th>Qtd.</th><th>Estado</th><th></th></tr></thead>
-        <tbody id="meus-produtos-tbody"></tbody>
-      </table>
-    </div>
-
-    <p class="hint">Cadastrar produto novo (fora da lista, se o teu não estiver lá)</p>
-    <div class="panel row">
-      <div class="field"><label>Nome do produto novo</label><input id="novo-produto-nome" placeholder="ex: Filtro de óleo universal" /></div>
-      <button class="btn secondary" id="novo-produto-btn" style="align-self:flex-end;">Adicionar à lista</button>
-    </div>
-
-    <p class="hint">Actualizar preço/stock/quantidade de um produto teu</p>
-    <div class="panel row">
-      <div class="field"><label>Produto</label><select id="prod-select"></select></div>
-      <div class="field"><label>Preço normal (Kz)</label><input id="prod-preco" type="number" /></div>
-      <div class="field"><label>Preço promocional (opcional)</label><input id="prod-promo" type="number" placeholder="deixa em branco para remover" /></div>
-      <div class="field"><label>Stock (disponível/indisponível)</label><select id="prod-stock"><option value="1">Disponível</option><option value="0">Sem stock</option></select></div>
-      <div class="field"><label>Quantidade em stock (opcional)</label><input id="prod-quantidade" type="number" min="0" placeholder="deixa em branco se não quiseres controlar" /></div>
-      <div class="field">
-        <label>Imagem do produto (opcional)</label>
-        <input id="prod-imagem" placeholder="https://..." />
-        <input type="file" id="prod-imagem-arquivo" accept="image/*" style="margin-top:6px; width:100%; color:var(--white); font-size:11px;" />
-        <button type="button" class="mini-btn" id="prod-imagem-enviar-btn" style="margin-top:4px;">Enviar ficheiro</button>
+    <details class="disclosure">
+      <summary>Validar cupão de cliente</summary>
+      <div class="disclosure-body">
+        <div class="row">
+          <div class="field"><label>Código do cupão</label><input id="cupom-token" placeholder="MON-XXXXXX" /></div>
+          <button class="btn secondary" id="validar-cupom-btn" style="align-self:flex-end; height:44px;">Validar</button>
+        </div>
+        <div id="cupom-resultado"></div>
       </div>
-    </div>
-    <label style="display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#C9C6BE; text-transform:none; margin-top:8px;">
-      <input type="checkbox" id="prod-auto-desativar" checked style="width:auto; flex:none;" />
-      Desactivar automaticamente quando a quantidade chegar a zero (repõe quando quiseres, actualizando a quantidade outra vez)
-    </label>
-    <div class="hint" style="margin:6px 0 0;">Sem imagem, o cliente vê um ícone genérico. Preço promocional tem de ser menor que o normal — apaga o campo para remover a promoção. Quantidade é opcional — sem ela, o stock funciona só pelo botão Disponível/Sem stock.</div>
-    <button class="btn secondary" id="actualizar-produto-btn" style="margin-top:10px;">Actualizar</button>
+    </details>
 
-    <p class="hint" style="margin-top:24px;">Validar cupão de desconto do cliente</p>
-    <div class="panel row">
-      <div class="field"><label>Código do cupão (ex: MON-X7K4P9)</label><input id="cupom-token" placeholder="MON-XXXXXX" /></div>
-      <button class="btn secondary" id="validar-cupom-btn" style="align-self:flex-end;">Validar</button>
-    </div>
-    <div id="cupom-resultado"></div>
   </section>
 </main>
 
 <div id="modal-ajuda-midia" class="modal-overlay" style="display:none;">
   <div class="modal-box">
     <button class="modal-close" id="fechar-modal-ajuda" aria-label="Fechar">✕</button>
-    <h3>Como obter um link de foto ou vídeo</h3>
-    <p class="hint" style="margin:10px 0;">A Monarca não guarda ficheiros — só o link. Recomendado, é da própria Monarca:</p>
-    <ol style="font-size:13px; line-height:1.7; padding-left:18px;">
-      <li><strong>Monarca Upload (recomendado)</strong> — vai a <a href="https://monarca-upload.onrender.com/" target="_blank" rel="noopener" style="color:var(--road-yellow)">monarca-upload.onrender.com</a>, cria uma conta rápida, carrega a foto/vídeo, e copia o link gerado para aqui.</li>
-      <li><strong>Google Fotos / Google Drive</strong> — carrega a foto, clica com o botão direito → "Obter link" → activa "Qualquer pessoa com o link" → cola aqui.</li>
-      <li><strong>Imgur (sem conta)</strong> — vai a imgur.com/upload, arrasta a foto, copia o link que aparece por baixo da imagem.</li>
+    <h3>Como obter um link</h3>
+    <p style="font-size:13px; color:var(--text-dim); margin:8px 0 14px;">A Mornaca não guarda ficheiros — só o link.</p>
+    <ol>
+      <li><strong>Monarca Upload</strong> — <a href="https://monarca-upload.onrender.com/" target="_blank" rel="noopener">monarca-upload.onrender.com</a>, cria conta, carrega, copia o link.</li>
+      <li><strong>Google Fotos/Drive</strong> — botão direito → "Obter link" → "Qualquer pessoa com o link".</li>
+      <li><strong>Imgur</strong> — imgur.com/upload, sem conta.</li>
     </ol>
-    <p class="hint" style="margin-top:14px;">Se tiveres dificuldade, envia a foto directamente para o WhatsApp da Monarca que a equipa ajuda a gerar o link por ti.</p>
   </div>
 </div>
 
 <script>
-// --- Configuração fixa: edita esta linha uma vez, não é pedido ao fornecedor ---
 const API_BASE_URL = "https://monarca-orw0.onrender.com";
 
 let tenantActual = null;
@@ -236,7 +317,6 @@ document.getElementById('cadastrar-btn').addEventListener('click', async ()=>{
   if(gpsLat===null){ banner('Obtém a localização por GPS antes de cadastrar.', false); return; }
   try{
     const tenant = await chamar('/api/tenants', {method:'POST', body: JSON.stringify({nome, zona, lat:gpsLat, lng:gpsLng, whatsappNumero, nif})});
-
     if(midiasTexto){
       const urls = midiasTexto.split('\n').map(u=>u.trim()).filter(Boolean);
       for(const url of urls){
@@ -245,8 +325,7 @@ document.getElementById('cadastrar-btn').addEventListener('click', async ()=>{
         catch(e){ console.error('Falha ao gravar mídia', url, e); }
       }
     }
-
-    banner('Loja cadastrada — fica pendente de validação manual pela equipa Monarca.', true);
+    banner('Loja cadastrada — fica pendente de validação manual pela equipa Mornaca.', true);
     await entrarComoTenant(tenant.id);
   }catch(e){
     banner(`Falha ao cadastrar: ${e.message}`, false);
@@ -297,30 +376,29 @@ async function carregarMeusProdutos(){
 }
 
 function renderMeusProdutos(lista){
-  const tbody = document.getElementById('meus-produtos-tbody');
+  const div = document.getElementById('produtos-lista');
   if(lista.length===0){
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Ainda sem produtos cadastrados.</td></tr>';
+    div.innerHTML = '<p class="empty">Ainda sem produtos cadastrados — usa "Editar ou adicionar produto" abaixo.</p>';
     return;
   }
-  tbody.innerHTML = lista.map(p=>{
-    const estado = p.stock ? 'Disponível' : 'Indisponível';
-    const qtd = p.quantidade!=null ? p.quantidade : '—';
-    const promo = p.preco_promocional ? `${Number(p.preco_promocional).toLocaleString('pt-PT')} Kz` : '—';
-    return `<tr>
-      <td>${p.nome}</td>
-      <td>${Number(p.preco).toLocaleString('pt-PT')} Kz</td>
-      <td>${promo}</td>
-      <td>${qtd}</td>
-      <td>${estado}</td>
-      <td><button class="mini-btn" onclick="editarProduto('${p.produto_id}')">Editar</button></td>
-    </tr>`;
+  div.innerHTML = lista.map(p=>{
+    const dot = p.stock ? 'dot-success' : 'dot-faint';
+    const promo = p.preco_promocional ? ` · promo ${Number(p.preco_promocional).toLocaleString('pt-PT')} Kz` : '';
+    return `<div class="row-item" style="cursor:pointer;" onclick="editarProduto('${p.produto_id}')">
+      <div>
+        <div class="name"><span class="dot ${dot}"></span>${p.nome}</div>
+        <div class="meta">${Number(p.preco).toLocaleString('pt-PT')} Kz${promo}</div>
+      </div>
+      <span class="btn-sm">Editar</span>
+    </div>`;
   }).join('');
 }
 
 function editarProduto(produtoId){
   document.getElementById('prod-select').value = produtoId;
   preencherFormularioProduto();
-  document.getElementById('prod-select').scrollIntoView({behavior:'smooth', block:'center'});
+  document.getElementById('editor-produto-details').open = true;
+  document.getElementById('editor-produto-details').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 document.getElementById('novo-produto-btn').addEventListener('click', async ()=>{
@@ -328,7 +406,7 @@ document.getElementById('novo-produto-btn').addEventListener('click', async ()=>
   if(!nome){ banner('Escreve o nome do produto novo.', false); return; }
   try{
     const produto = await chamar('/api/produtos', {method:'POST', body: JSON.stringify({nome})});
-    banner(`Produto "${produto.nome}" adicionado — escolhe-o na lista abaixo para definir preço.`, true);
+    banner(`Produto "${produto.nome}" adicionado — define o preço abaixo.`, true);
     document.getElementById('novo-produto-nome').value = '';
     await carregarCatalogo();
     document.getElementById('prod-select').value = produto.id;
@@ -353,39 +431,65 @@ document.getElementById('prod-select').addEventListener('change', preencherFormu
 async function carregarPortal(){
   const t = await chamar('/api/tenants/'+tenantActual.id);
   tenantActual = t;
-  document.getElementById('stats-row').innerHTML = `
-    <div class="stat"><div class="n">${t.estado}</div><div class="l">Estado no ranking</div></div>
-    <div class="stat"><div class="n">${t.validado ? 'Sim' : 'Pendente'}</div><div class="l">Validação da equipa</div></div>
-    <div class="stat"><div class="n">${Number(t.saldo_aberto).toLocaleString('pt-PT')} Kz</div><div class="l">Saldo em aberto</div></div>
-    <div class="stat"><div class="n">${Math.round(t.taxa_confirmacao)}%</div><div class="l">Taxa de confirmação</div></div>
-    <div class="stat"><div class="n">${Math.round(t.pontualidade)}%</div><div class="l">Pontualidade</div></div>
+
+  document.getElementById('saldo-numero').textContent = Number(t.saldo_aberto).toLocaleString('pt-PT') + ' Kz';
+
+  const tagEstado = t.estado === 'prioridade' ? 'tag success' : t.estado === 'bloqueado' || t.estado === 'suspenso' ? 'tag danger' : 'tag';
+  document.getElementById('hero-tags').innerHTML = `
+    <span class="${tagEstado}">${t.estado}</span>
+    <span class="tag ${t.validado ? 'success' : ''}">${t.validado ? 'Validado' : 'Validação pendente'}</span>
   `;
+
+  document.getElementById('detalhes-conta').innerHTML = `
+    <div class="kv"><div class="v">${Math.round(t.taxa_confirmacao)}%</div><div class="l">Confirmação</div></div>
+    <div class="kv"><div class="v">${Math.round(t.pontualidade)}%</div><div class="l">Pontualidade</div></div>
+    <div class="kv"><div class="v">${Number(t.valorTotalVendido||0).toLocaleString('pt-PT')} Kz</div><div class="l">Vendido (informativo)</div></div>
+  `;
+
   const leads = await chamar('/api/leads?tenantId='+t.id);
-  const tbody = document.getElementById('leads-tbody');
   const estadosPendentes = ['enviado', 'confirmado_cliente'];
-  tbody.innerHTML = leads.length===0
-    ? '<tr><td colspan="5" class="empty">Ainda sem clientes gerados.</td></tr>'
-    : leads.map(l=>{
-        const pendente = estadosPendentes.includes(l.status);
-        const acoes = pendente
-          ? `<button class="mini-btn" onclick="validarCompra('${l.codigo}')">✅ Validar compra</button>
-             <button class="mini-btn perigo" onclick="semCompra('${l.codigo}')">❌ Sem compra</button>`
-          : '';
-        return `<tr>
-          <td>${l.codigo}</td>
-          <td>${l.produto_id}</td>
-          <td>${l.status}${pendente ? '<span class="badge-pendente">Acção necessária</span>' : ''}</td>
-          <td>${new Date(l.criado_em).toLocaleDateString('pt-PT')}</td>
-          <td>${acoes}<button class="mini-btn" onclick="denunciarCliente('${l.codigo}')">Denunciar</button></td>
-        </tr>`;
-      }).join('');
+  const pendentes = leads.filter(l=>estadosPendentes.includes(l.status));
+  const historico = leads.filter(l=>!estadosPendentes.includes(l.status));
+
+  document.getElementById('leads-pendentes').innerHTML = pendentes.length===0
+    ? '<p class="empty">Sem clientes pendentes de acção neste momento.</p>'
+    : pendentes.map(l=>`
+      <div class="lead-card">
+        <div class="top">
+          <div>
+            <div class="codigo mono">${l.codigo}</div>
+            <div class="produto">${l.produto_id}</div>
+          </div>
+          <span class="needs-action">Acção necessária</span>
+        </div>
+        <div class="acoes">
+          <button class="btn-sm ok" onclick="validarCompra('${l.codigo}')">Validar compra</button>
+          <button class="btn-sm perigo" onclick="semCompra('${l.codigo}')">Sem compra</button>
+          <button class="btn-sm" onclick="denunciarCliente('${l.codigo}')">Denunciar</button>
+        </div>
+      </div>
+    `).join('');
+
+  document.getElementById('historico-count').textContent = historico.length;
+  document.getElementById('leads-historico').innerHTML = historico.length===0
+    ? '<p class="empty">Ainda sem histórico.</p>'
+    : historico.map(l=>`
+      <div class="row-item">
+        <div>
+          <div class="name mono">${l.codigo} <span style="color:var(--text-faint); font-weight:400;">· ${l.produto_id}</span></div>
+          <div class="meta">${new Date(l.criado_em).toLocaleDateString('pt-PT')}</div>
+        </div>
+        <span class="tag ${l.status==='confirmado' ? 'success' : ''}">${l.status}</span>
+      </div>
+    `).join('');
+
   await carregarMidias();
 }
 
 async function validarCompra(codigo){
   try{
     const resultado = await chamar(`/api/leads/${codigo}/confirmar`, {method:'POST', body: JSON.stringify({origem:'fornecedor'})});
-    banner(resultado.temAmbas ? 'Compra validada! Cliente já confirmou também — pontos atribuídos.' : 'Compra validada da tua parte. Falta o cliente confirmar pelo WhatsApp da Monarca ou pelo portal dele.', true);
+    banner(resultado.temAmbas ? 'Compra validada! Cliente já confirmou também — pontos atribuídos.' : 'Compra validada da tua parte. Falta o cliente confirmar.', true);
     await carregarPortal();
   }catch(e){ banner(`Falha ao validar: ${e.message}`, false); }
 }
@@ -399,6 +503,17 @@ async function semCompra(codigo){
   }catch(e){ banner(`Falha ao marcar: ${e.message}`, false); }
 }
 
+async function denunciarCliente(leadCodigo){
+  const motivo = prompt('Descreve o motivo da denúncia deste cliente:');
+  if(!motivo || !motivo.trim()) return;
+  try{
+    await chamar('/api/denuncias', {method:'POST', body: JSON.stringify({leadCodigo, origem:'fornecedor', motivo: motivo.trim()})});
+    banner('Denúncia registada — a equipa vai analisar.', true);
+  }catch(e){
+    banner(`Falha ao registar denúncia: ${e.message}`, false);
+  }
+}
+
 async function carregarMidias(){
   const midias = await chamar(`/api/tenants/${tenantActual.id}/midias`);
   const div = document.getElementById('midias-lista');
@@ -406,22 +521,20 @@ async function carregarMidias(){
     div.innerHTML = '<p class="empty">Ainda sem fotos/vídeos adicionados.</p>';
     return;
   }
-  div.innerHTML = `<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px;">
-    ${midias.map(m=>`
-      <div style="position:relative;">
-        ${m.tipo==='video'
-          ? `<video src="${m.url}" muted preload="metadata" playsinline style="width:100%;height:90px;object-fit:cover;border-radius:6px;background:var(--asphalt-3);cursor:pointer;" onclick="this.paused ? this.play() : this.pause()" onerror="mostrarMidiaIndisponivelFornecedor(this,'${m.url.replace(/'/g,"\\'")}')"></video>`
-          : `<img src="${m.url}" style="width:100%; height:90px; object-fit:cover; border-radius:6px;" onerror="mostrarMidiaIndisponivelFornecedor(this,'${m.url.replace(/'/g,"\\'")}')" />`}
-        <button class="mini-btn perigo" style="position:absolute; top:4px; right:4px; padding:2px 6px;" onclick="removerMidia('${m.id}')">✕</button>
-      </div>
-    `).join('')}
-  </div>`;
+  div.innerHTML = midias.map(m=>`
+    <div class="midia-item">
+      ${m.tipo==='video'
+        ? `<video src="${m.url}" muted preload="metadata" playsinline onclick="this.paused ? this.play() : this.pause()" onerror="mostrarMidiaIndisponivelFornecedor(this,'${m.url.replace(/'/g,"\\'")}')"></video>`
+        : `<img src="${m.url}" onerror="mostrarMidiaIndisponivelFornecedor(this,'${m.url.replace(/'/g,"\\'")}')" />`}
+      <button class="midia-remover" onclick="removerMidia('${m.id}')">✕</button>
+    </div>
+  `).join('');
 }
 
 function mostrarMidiaIndisponivelFornecedor(el, url){
   const div = document.createElement('div');
-  div.style.cssText = 'width:100%;height:90px;border-radius:6px;background:var(--asphalt-3);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;text-align:center;padding:4px;color:var(--steel);';
-  div.innerHTML = `Indisponível<br><a href="${url}" target="_blank" rel="noopener" style="color:var(--road-yellow);font-size:9px;">abrir link</a>`;
+  div.className = 'midia-erro';
+  div.innerHTML = `Indisponível<a href="${url}" target="_blank" rel="noopener">abrir link</a>`;
   el.replaceWith(div);
 }
 
@@ -436,7 +549,7 @@ document.getElementById('prod-imagem-enviar-btn').addEventListener('click', asyn
     const dados = await resp.json();
     if(!resp.ok) throw new Error(dados.erro || 'Falha no upload');
     document.getElementById('prod-imagem').value = dados.url;
-    banner('Imagem enviada — agora clica em "Actualizar" para gravar no produto.', true);
+    banner('Imagem enviada — clica em "Actualizar produto" para gravar.', true);
     input.value = '';
   }catch(e){ banner(`Falha ao enviar imagem: ${e.message}`, false); }
 });
@@ -451,10 +564,8 @@ document.getElementById('enviar-midia-btn').addEventListener('click', async ()=>
   const input = document.getElementById('midia-arquivos');
   const ficheiros = Array.from(input.files || []);
   if(ficheiros.length===0){ banner('Escolhe pelo menos um ficheiro.', false); return; }
-
   const statusEl = document.getElementById('midia-upload-status');
   let sucesso = 0, falhas = 0;
-
   for(let i=0; i<ficheiros.length; i++){
     const ficheiro = ficheiros[i];
     statusEl.textContent = `A enviar ${i+1} de ${ficheiros.length}: ${ficheiro.name}...`;
@@ -464,7 +575,6 @@ document.getElementById('enviar-midia-btn').addEventListener('click', async ()=>
       const respUpload = await fetch(API_BASE_URL + '/api/uploads', { method:'POST', body: formData });
       const dadosUpload = await respUpload.json();
       if(!respUpload.ok) throw new Error(dadosUpload.erro || 'Falha no upload');
-
       await chamar(`/api/tenants/${tenantActual.id}/midias`, {method:'POST', body: JSON.stringify({tipo: dadosUpload.tipo, url: dadosUpload.url})});
       sucesso++;
     }catch(e){
@@ -473,16 +583,15 @@ document.getElementById('enviar-midia-btn').addEventListener('click', async ()=>
       statusEl.textContent = `Falha em "${ficheiro.name}": ${e.message}`;
     }
   }
-
   input.value = '';
-  banner(falhas===0 ? `${sucesso} ficheiro(s) enviado(s) com sucesso.` : `${sucesso} enviado(s), ${falhas} falharam.`, falhas===0);
+  banner(falhas===0 ? `${sucesso} ficheiro(s) enviado(s).` : `${sucesso} enviado(s), ${falhas} falharam.`, falhas===0);
   if(falhas===0) statusEl.textContent = '';
   await carregarMidias();
 });
 
 document.getElementById('adicionar-midia-btn').addEventListener('click', async ()=>{
   const texto = document.getElementById('midia-urls').value.trim();
-  if(!texto){ banner('Cola pelo menos um link antes de adicionar.', false); return; }
+  if(!texto){ banner('Cola pelo menos um link.', false); return; }
   const urls = texto.split('\n').map(u=>u.trim()).filter(Boolean);
   let sucesso = 0, falhas = 0;
   for(const url of urls){
@@ -511,19 +620,6 @@ document.getElementById('fechar-modal-ajuda').addEventListener('click', ()=>{
   document.getElementById('modal-ajuda-midia').style.display = 'none';
 });
 
-async function denunciarCliente(leadCodigo){
-  const motivo = prompt('Descreve o motivo da denúncia deste cliente:');
-  if(!motivo || !motivo.trim()) return;
-  try{
-    await chamar('/api/denuncias', {method:'POST', body: JSON.stringify({
-      leadCodigo, origem:'fornecedor', motivo: motivo.trim()
-    })});
-    banner('Denúncia registada — a equipa vai analisar.', true);
-  }catch(e){
-    banner(`Falha ao registar denúncia: ${e.message}`, false);
-  }
-}
-
 document.getElementById('actualizar-produto-btn').addEventListener('click', async ()=>{
   const produtoId = document.getElementById('prod-select').value;
   const preco = document.getElementById('prod-preco').value;
@@ -532,7 +628,7 @@ document.getElementById('actualizar-produto-btn').addEventListener('click', asyn
   const imagemUrl = document.getElementById('prod-imagem').value.trim();
   const quantidade = document.getElementById('prod-quantidade').value.trim();
   const autoDesativar = document.getElementById('prod-auto-desativar').checked;
-  if(!produtoId){ banner('Escolhe um produto — o catálogo pode não ter carregado ainda.', false); return; }
+  if(!produtoId){ banner('Escolhe um produto.', false); return; }
   try{
     const resultado = await chamar(`/api/tenants/${tenantActual.id}/produtos`, {method:'PATCH', body: JSON.stringify({
       produtoId, preco:Number(preco), stock: stock==='1',
@@ -541,7 +637,7 @@ document.getElementById('actualizar-produto-btn').addEventListener('click', asyn
       quantidade: quantidade === '' ? null : Number(quantidade),
       autoDesativar
     })});
-    banner(resultado.autoDesativado ? 'Produto actualizado — desactivado automaticamente (quantidade em zero).' : 'Produto actualizado.', true);
+    banner(resultado.autoDesativado ? 'Actualizado — desactivado automaticamente (quantidade zero).' : 'Produto actualizado.', true);
     await carregarMeusProdutos();
   }catch(e){
     banner(`Falha ao actualizar: ${e.message}`, false);
@@ -553,13 +649,13 @@ document.getElementById('validar-cupom-btn').addEventListener('click', async ()=
   if(!token){ banner('Escreve o código do cupão.', false); return; }
   try{
     const cupom = await chamar('/api/cupons/'+encodeURIComponent(token));
-    const cor = cupom.valido ? 'var(--signal-green)' : 'var(--signal-red)';
+    const cor = cupom.valido ? 'var(--success)' : 'var(--danger)';
     const estadoTexto = cupom.usado ? 'JÁ UTILIZADO' : cupom.expirado ? 'EXPIRADO' : 'VÁLIDO';
     document.getElementById('cupom-resultado').innerHTML = `
-      <div class="panel" style="border-color:${cor};">
-        <div style="font-family:'Oswald',sans-serif; font-size:22px; font-weight:700; color:${cor};">${cupom.percentual}% de desconto</div>
-        <div class="hint" style="margin:6px 0;">Estado: ${estadoTexto} · Expira: ${new Date(cupom.expiraEm).toLocaleDateString('pt-PT')}</div>
-        ${cupom.valido ? `<button class="btn secondary" onclick="marcarCupomUsado('${cupom.token}')">Marcar como utilizado</button>` : ''}
+      <div style="margin-top:14px; padding:16px; border:1px solid var(--border); border-radius:10px;">
+        <div style="font-size:24px; font-weight:700; color:${cor};">${cupom.percentual}% desconto</div>
+        <div style="font-size:12px; color:var(--text-dim); margin:6px 0 12px;">${estadoTexto} · expira ${new Date(cupom.expiraEm).toLocaleDateString('pt-PT')}</div>
+        ${cupom.valido ? `<button class="btn-sm ok" onclick="marcarCupomUsado('${cupom.token}')">Marcar como utilizado</button>` : ''}
       </div>
     `;
   }catch(e){
