@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mornaca — Portal do Fornecedor</title>
+<title>Monarca — Portal do Fornecedor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -61,6 +61,11 @@
   .btn-sm:hover{border-color:var(--accent); color:var(--accent);}
   .btn-sm.perigo:hover{border-color:var(--danger); color:#E08A7E;}
   .btn-sm.ok:hover{border-color:var(--success); color:#7FC9A0;}
+
+  /* --- estado de carregamento: nunca deixar o utilizador a perguntar-se se travou --- */
+  .btn:disabled, .btn-sm:disabled{opacity:.6; cursor:wait;}
+  .spinner{display:inline-block; width:13px; height:13px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:girar .7s linear infinite; vertical-align:-2px; margin-right:6px;}
+  @keyframes girar{to{transform:rotate(360deg);}}
 
   /* --- hero stats: only what matters, at a glance --- */
   .hero{padding:28px 0 8px;}
@@ -132,7 +137,7 @@
 <header>
   <div class="brand">
     <div class="brand-mark">M</div>
-    <div><div class="brand-name">Mornaca</div><div class="brand-sub">Portal do fornecedor</div></div>
+    <div><div class="brand-name">Monarca</div><div class="brand-sub">Portal do fornecedor</div></div>
   </div>
   <button id="sair-btn">Sair</button>
 </header>
@@ -174,7 +179,7 @@
 
     <div class="hero">
       <div class="hero-saldo mono" id="saldo-numero">— Kz</div>
-      <div class="hero-saldo-label">Saldo devido à Mornaca</div>
+      <div class="hero-saldo-label">Saldo devido à Monarca</div>
       <div class="hero-tags" id="hero-tags"></div>
     </div>
 
@@ -263,7 +268,7 @@
   <div class="modal-box">
     <button class="modal-close" id="fechar-modal-ajuda" aria-label="Fechar">✕</button>
     <h3>Como obter um link</h3>
-    <p style="font-size:13px; color:var(--text-dim); margin:8px 0 14px;">A Mornaca não guarda ficheiros — só o link.</p>
+    <p style="font-size:13px; color:var(--text-dim); margin:8px 0 14px;">A Monarca não guarda ficheiros — só o link.</p>
     <ol>
       <li><strong>Monarca Upload</strong> — <a href="https://monarca-upload.onrender.com/" target="_blank" rel="noopener">monarca-upload.onrender.com</a>, cria conta, carrega, copia o link.</li>
       <li><strong>Google Fotos/Drive</strong> — botão direito → "Obter link" → "Qualquer pessoa com o link".</li>
@@ -290,6 +295,22 @@ async function chamar(path, opts={}){
   return resp.status===204 ? null : resp.json();
 }
 
+// Desactiva o botão e mostra um spinner enquanto fn corre — garante que o
+// utilizador nunca fica sem saber se a página travou numa operação lenta
+// (rede fraca, Render a acordar do sono, upload grande).
+async function comCarregamento(botao, textoCarregando, fn){
+  if(!botao) return fn();
+  const textoOriginal = botao.innerHTML;
+  botao.disabled = true;
+  botao.innerHTML = `<span class="spinner"></span>${textoCarregando}`;
+  try{
+    return await fn();
+  } finally {
+    botao.disabled = false;
+    botao.innerHTML = textoOriginal;
+  }
+}
+
 document.getElementById('mostrar-cadastro-btn').addEventListener('click', ()=>{
   document.getElementById('cadastro-panel').style.display='block';
 });
@@ -308,6 +329,7 @@ document.getElementById('obter-gps-btn').addEventListener('click', ()=>{
 });
 
 document.getElementById('cadastrar-btn').addEventListener('click', async ()=>{
+  await comCarregamento(document.getElementById('cadastrar-btn'), ' A cadastrar...', async ()=>{
   const nome = document.getElementById('cad-nome').value.trim();
   const zona = document.getElementById('cad-zona').value.trim();
   const whatsappNumero = document.getElementById('cad-whatsapp').value.trim();
@@ -325,14 +347,17 @@ document.getElementById('cadastrar-btn').addEventListener('click', async ()=>{
         catch(e){ console.error('Falha ao gravar mídia', url, e); }
       }
     }
-    banner('Loja cadastrada — fica pendente de validação manual pela equipa Mornaca.', true);
+    banner('Loja cadastrada — fica pendente de validação manual pela equipa Monarca.', true);
     await entrarComoTenant(tenant.id);
   }catch(e){
     banner(`Falha ao cadastrar: ${e.message}`, false);
   }
+
+  });
 });
 
 document.getElementById('entrar-btn').addEventListener('click', async ()=>{
+  await comCarregamento(document.getElementById('entrar-btn'), ' A entrar...', async ()=>{
   const whatsapp = document.getElementById('login-whatsapp').value.trim();
   if(!whatsapp){ banner('Escreve o teu número de WhatsApp.', false); return; }
   try{
@@ -341,6 +366,8 @@ document.getElementById('entrar-btn').addEventListener('click', async ()=>{
   }catch(e){
     banner(`Não encontrámos a tua loja: ${e.message}. Cadastra-te abaixo.`, false);
   }
+
+  });
 });
 
 async function entrarComoTenant(tenantId, tenantJaCarregado){
@@ -402,6 +429,7 @@ function editarProduto(produtoId){
 }
 
 document.getElementById('novo-produto-btn').addEventListener('click', async ()=>{
+  await comCarregamento(document.getElementById('novo-produto-btn'), ' A adicionar...', async ()=>{
   const nome = document.getElementById('novo-produto-nome').value.trim();
   if(!nome){ banner('Escreve o nome do produto novo.', false); return; }
   try{
@@ -414,6 +442,8 @@ document.getElementById('novo-produto-btn').addEventListener('click', async ()=>
   }catch(e){
     banner(`Falha ao adicionar produto: ${e.message}`, false);
   }
+
+  });
 });
 
 function preencherFormularioProduto(){
@@ -463,9 +493,9 @@ async function carregarPortal(){
           <span class="needs-action">Acção necessária</span>
         </div>
         <div class="acoes">
-          <button class="btn-sm ok" onclick="validarCompra('${l.codigo}')">Validar compra</button>
-          <button class="btn-sm perigo" onclick="semCompra('${l.codigo}')">Sem compra</button>
-          <button class="btn-sm" onclick="denunciarCliente('${l.codigo}')">Denunciar</button>
+          <button class="btn-sm ok" onclick="validarCompra(this,'${l.codigo}')">Validar compra</button>
+          <button class="btn-sm perigo" onclick="semCompra(this,'${l.codigo}')">Sem compra</button>
+          <button class="btn-sm" onclick="denunciarCliente(this,'${l.codigo}')">Denunciar</button>
         </div>
       </div>
     `).join('');
@@ -486,32 +516,38 @@ async function carregarPortal(){
   await carregarMidias();
 }
 
-async function validarCompra(codigo){
-  try{
-    const resultado = await chamar(`/api/leads/${codigo}/confirmar`, {method:'POST', body: JSON.stringify({origem:'fornecedor'})});
-    banner(resultado.temAmbas ? 'Compra validada! Cliente já confirmou também — pontos atribuídos.' : 'Compra validada da tua parte. Falta o cliente confirmar.', true);
-    await carregarPortal();
-  }catch(e){ banner(`Falha ao validar: ${e.message}`, false); }
+async function validarCompra(botao, codigo){
+  await comCarregamento(botao, ' A validar...', async ()=>{
+    try{
+      const resultado = await chamar(`/api/leads/${codigo}/confirmar`, {method:'POST', body: JSON.stringify({origem:'fornecedor'})});
+      banner(resultado.temAmbas ? 'Compra validada! Cliente já confirmou também — pontos atribuídos.' : 'Compra validada da tua parte. Falta o cliente confirmar.', true);
+      await carregarPortal();
+    }catch(e){ banner(`Falha ao validar: ${e.message}`, false); }
+  });
 }
 
-async function semCompra(codigo){
+async function semCompra(botao, codigo){
   if(!confirm('Confirma que este contacto não resultou em venda?')) return;
-  try{
-    await chamar(`/api/leads/${codigo}/invalidar`, {method:'POST', body: JSON.stringify({origem:'fornecedor'})});
-    banner('Marcado como sem compra.', true);
-    await carregarPortal();
-  }catch(e){ banner(`Falha ao marcar: ${e.message}`, false); }
+  await comCarregamento(botao, ' A marcar...', async ()=>{
+    try{
+      await chamar(`/api/leads/${codigo}/invalidar`, {method:'POST', body: JSON.stringify({origem:'fornecedor'})});
+      banner('Marcado como sem compra.', true);
+      await carregarPortal();
+    }catch(e){ banner(`Falha ao marcar: ${e.message}`, false); }
+  });
 }
 
-async function denunciarCliente(leadCodigo){
+async function denunciarCliente(botao, leadCodigo){
   const motivo = prompt('Descreve o motivo da denúncia deste cliente:');
   if(!motivo || !motivo.trim()) return;
-  try{
-    await chamar('/api/denuncias', {method:'POST', body: JSON.stringify({leadCodigo, origem:'fornecedor', motivo: motivo.trim()})});
-    banner('Denúncia registada — a equipa vai analisar.', true);
-  }catch(e){
-    banner(`Falha ao registar denúncia: ${e.message}`, false);
-  }
+  await comCarregamento(botao, ' A enviar...', async ()=>{
+    try{
+      await chamar('/api/denuncias', {method:'POST', body: JSON.stringify({leadCodigo, origem:'fornecedor', motivo: motivo.trim()})});
+      banner('Denúncia registada — a equipa vai analisar.', true);
+    }catch(e){
+      banner(`Falha ao registar denúncia: ${e.message}`, false);
+    }
+  });
 }
 
 async function carregarMidias(){
@@ -526,7 +562,7 @@ async function carregarMidias(){
       ${m.tipo==='video'
         ? `<video src="${m.url}" muted preload="metadata" playsinline onclick="this.paused ? this.play() : this.pause()" onerror="mostrarMidiaIndisponivelFornecedor(this,'${m.url.replace(/'/g,"\\'")}')"></video>`
         : `<img src="${m.url}" onerror="mostrarMidiaIndisponivelFornecedor(this,'${m.url.replace(/'/g,"\\'")}')" />`}
-      <button class="midia-remover" onclick="removerMidia('${m.id}')">✕</button>
+      <button class="midia-remover" onclick="removerMidia(this,'${m.id}')">✕</button>
     </div>
   `).join('');
 }
@@ -539,6 +575,7 @@ function mostrarMidiaIndisponivelFornecedor(el, url){
 }
 
 document.getElementById('prod-imagem-enviar-btn').addEventListener('click', async ()=>{
+  await comCarregamento(document.getElementById('prod-imagem-enviar-btn'), ' A enviar...', async ()=>{
   const input = document.getElementById('prod-imagem-arquivo');
   const ficheiro = input.files && input.files[0];
   if(!ficheiro){ banner('Escolhe uma imagem primeiro.', false); return; }
@@ -552,6 +589,8 @@ document.getElementById('prod-imagem-enviar-btn').addEventListener('click', asyn
     banner('Imagem enviada — clica em "Actualizar produto" para gravar.', true);
     input.value = '';
   }catch(e){ banner(`Falha ao enviar imagem: ${e.message}`, false); }
+
+  });
 });
 
 document.getElementById('toggle-link-manual').addEventListener('click', (e)=>{
@@ -561,6 +600,7 @@ document.getElementById('toggle-link-manual').addEventListener('click', (e)=>{
 });
 
 document.getElementById('enviar-midia-btn').addEventListener('click', async ()=>{
+  await comCarregamento(document.getElementById('enviar-midia-btn'), ' A enviar...', async ()=>{
   const input = document.getElementById('midia-arquivos');
   const ficheiros = Array.from(input.files || []);
   if(ficheiros.length===0){ banner('Escolhe pelo menos um ficheiro.', false); return; }
@@ -587,9 +627,12 @@ document.getElementById('enviar-midia-btn').addEventListener('click', async ()=>
   banner(falhas===0 ? `${sucesso} ficheiro(s) enviado(s).` : `${sucesso} enviado(s), ${falhas} falharam.`, falhas===0);
   if(falhas===0) statusEl.textContent = '';
   await carregarMidias();
+
+  });
 });
 
 document.getElementById('adicionar-midia-btn').addEventListener('click', async ()=>{
+  await comCarregamento(document.getElementById('adicionar-midia-btn'), ' A adicionar...', async ()=>{
   const texto = document.getElementById('midia-urls').value.trim();
   if(!texto){ banner('Cola pelo menos um link.', false); return; }
   const urls = texto.split('\n').map(u=>u.trim()).filter(Boolean);
@@ -604,13 +647,17 @@ document.getElementById('adicionar-midia-btn').addEventListener('click', async (
   document.getElementById('midia-urls').value = '';
   banner(falhas===0 ? `${sucesso} mídia(s) adicionada(s).` : `${sucesso} adicionada(s), ${falhas} falharam.`, falhas===0);
   await carregarMidias();
+
+  });
 });
 
-async function removerMidia(midiaId){
-  try{
-    await chamar(`/api/tenants/${tenantActual.id}/midias/${midiaId}`, {method:'DELETE'});
-    await carregarMidias();
-  }catch(e){ banner(`Falha ao remover: ${e.message}`, false); }
+async function removerMidia(botao, midiaId){
+  await comCarregamento(botao, '', async ()=>{
+    try{
+      await chamar(`/api/tenants/${tenantActual.id}/midias/${midiaId}`, {method:'DELETE'});
+      await carregarMidias();
+    }catch(e){ banner(`Falha ao remover: ${e.message}`, false); }
+  });
 }
 
 document.getElementById('ajuda-midia-btn').addEventListener('click', ()=>{
@@ -621,6 +668,7 @@ document.getElementById('fechar-modal-ajuda').addEventListener('click', ()=>{
 });
 
 document.getElementById('actualizar-produto-btn').addEventListener('click', async ()=>{
+  await comCarregamento(document.getElementById('actualizar-produto-btn'), ' A actualizar...', async ()=>{
   const produtoId = document.getElementById('prod-select').value;
   const preco = document.getElementById('prod-preco').value;
   const promo = document.getElementById('prod-promo').value.trim();
@@ -642,9 +690,12 @@ document.getElementById('actualizar-produto-btn').addEventListener('click', asyn
   }catch(e){
     banner(`Falha ao actualizar: ${e.message}`, false);
   }
+
+  });
 });
 
 document.getElementById('validar-cupom-btn').addEventListener('click', async ()=>{
+  await comCarregamento(document.getElementById('validar-cupom-btn'), ' A validar...', async ()=>{
   const token = document.getElementById('cupom-token').value.trim().toUpperCase();
   if(!token){ banner('Escreve o código do cupão.', false); return; }
   try{
@@ -655,30 +706,38 @@ document.getElementById('validar-cupom-btn').addEventListener('click', async ()=
       <div style="margin-top:14px; padding:16px; border:1px solid var(--border); border-radius:10px;">
         <div style="font-size:24px; font-weight:700; color:${cor};">${cupom.percentual}% desconto</div>
         <div style="font-size:12px; color:var(--text-dim); margin:6px 0 12px;">${estadoTexto} · expira ${new Date(cupom.expiraEm).toLocaleDateString('pt-PT')}</div>
-        ${cupom.valido ? `<button class="btn-sm ok" onclick="marcarCupomUsado('${cupom.token}')">Marcar como utilizado</button>` : ''}
+        ${cupom.valido ? `<button class="btn-sm ok" onclick="marcarCupomUsado(this,'${cupom.token}')">Marcar como utilizado</button>` : ''}
       </div>
     `;
   }catch(e){
     banner(`Falha ao validar cupão: ${e.message}`, false);
   }
+
+  });
 });
 
-async function marcarCupomUsado(token){
-  try{
-    await chamar(`/api/cupons/${token}/usar`, {method:'POST'});
-    banner('Cupão marcado como utilizado.', true);
-    document.getElementById('cupom-resultado').innerHTML = '';
-    document.getElementById('cupom-token').value = '';
-  }catch(e){
-    banner(`Falha ao marcar cupão: ${e.message}`, false);
-  }
+async function marcarCupomUsado(botao, token){
+  await comCarregamento(botao, ' A marcar...', async ()=>{
+    try{
+      await chamar(`/api/cupons/${token}/usar`, {method:'POST'});
+      banner('Cupão marcado como utilizado.', true);
+      document.getElementById('cupom-resultado').innerHTML = '';
+      document.getElementById('cupom-token').value = '';
+    }catch(e){
+      banner(`Falha ao marcar cupão: ${e.message}`, false);
+    }
+  });
 }
 
 (async function init(){
   const guardado = localStorage.getItem('mornaca_fornecedor_id');
   if(guardado){
-    try{ await entrarComoTenant(guardado); }
-    catch(e){ localStorage.removeItem('mornaca_fornecedor_id'); }
+    banner('<span class="spinner"></span>A carregar a tua conta...', true);
+    try{
+      await entrarComoTenant(guardado);
+      document.getElementById('status-banner').innerHTML = '';
+    }
+    catch(e){ localStorage.removeItem('mornaca_fornecedor_id'); document.getElementById('status-banner').innerHTML = ''; }
   }
 })();
 </script>
